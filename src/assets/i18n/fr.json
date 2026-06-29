@@ -1,0 +1,77 @@
+
+{
+  "NAV": {
+    "DASHBOARD": "Tableau de bord",
+    "LOGOUT": "Déconnexion"
+  },
+  "DASHBOARD": {
+    "TITLE": "Tableau de bord",
+    "WELCOME": "Bienvenue,",
+    "SOLAR_CALC": "Calculateur Solaire",
+    "SOLAR_DESC": "Dimensionnez votre installation solaire",
+    "WIND_CALC": "Calculateur Éolien",
+    "WIND_DESC": "Estimez la puissance de votre éolienne",
+    "PROJECTS": "Mes Projets",
+    "PROJECTS_DESC": "Gérez et suivez vos projets énergétiques",
+    "ADVANCED": "Outils Avancés",
+    "ADVANCED_DESC": "Outils de calcul et d'analyse avancés",
+    "MESSAGES": "Messages",
+    "MESSAGES_DESC": "Communiquez avec la communauté",
+    "AI": "Assistant IA",
+    "AI_DESC": "Obtenez des recommandations intelligentes",
+    "COMPARISON": "Comparaison Systèmes",
+    "COMPARISON_DESC": "Comparez solaire, éolien et hybride",
+    "PRICE_COMPARATOR": "Comparateur de Prix",
+    "PRICE_COMPARATOR_DESC": "Trouvez les meilleurs prix au Cameroun",
+    "ADMIN": "Administrateur",
+    "ADMIN_DESC": "Gérez les utilisateurs et le système",
+    "NEWS_TITLE": "Actualités Énergies Renouvelables – Afrique & Monde",
+    "LOADING_NEWS": "Chargement des actualités...",
+    "NO_NEWS": "Aucune actualité disponible.",
+    "READ_MORE": "Lire la suite →"
+  },
+  "LOGIN": {
+    "TITLE": "Connexion à votre compte",
+    "EMAIL": "Email",
+    "PASSWORD": "Mot de passe",
+    "SUBMIT": "Se connecter",
+    "NO_ACCOUNT": "Pas encore de compte ?",
+    "CREATE": "Créer un compte",
+    "FORGOT": "Mot de passe oublié ?"
+  },
+  "FORGOT": {
+    "TITLE": "Mot de passe oublié",
+    "SUBTITLE": "Entrez votre email pour recevoir un lien de réinitialisation",
+    "EMAIL": "Adresse email",
+    "SUBMIT": "Envoyer le lien",
+    "SENDING": "Envoi en cours...",
+    "SUCCESS_TITLE": "Email envoyé !",
+    "SUCCESS_MSG": "Un lien de réinitialisation a été envoyé à",
+    "SUCCESS_CHECK": "Vérifiez votre boîte Gmail et cliquez sur le lien.",
+    "BACK": "← Retour à la connexion"
+  },
+  "RESET": {
+    "TITLE": "Nouveau mot de passe",
+    "SUBTITLE": "Choisissez un nouveau mot de passe pour votre compte",
+    "PASSWORD": "Nouveau mot de passe",
+    "CONFIRM": "Confirmer le mot de passe",
+    "SUBMIT": "Réinitialiser le mot de passe",
+    "LOADING": "Réinitialisation...",
+    "SUCCESS_TITLE": "Mot de passe modifié !",
+    "SUCCESS_MSG": "Votre mot de passe a été réinitialisé avec succès.",
+    "SUCCESS_REDIRECT": "Vous allez être redirigé vers la page de connexion...",
+    "BACK": "← Retour à la connexion"
+  },
+  "PRICE_COMPARATOR": {
+    "TITLE": "Comparateur de Prix",
+    "SUBTITLE": "Comparez les prix des équipements solaires chez les fournisseurs camerounais",
+    "TYPE_LABEL": "Type d'équipement",
+    "TYPE_PLACEHOLDER": "-- Choisir un type --",
+    "COMPARE_BTN": "Comparer",
+    "LOADING": "Chargement...",
+    "BEST_PRICE": "Meilleur Prix",
+    "ALL_PRICES": "Tous les prix",
+    "NO_RESULTS": "Aucun résultat trouvé pour ce type d'équipement.",
+    "BACK": "← Retour au Dashboard"
+  }
+}

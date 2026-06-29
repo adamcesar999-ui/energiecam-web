@@ -1,0 +1,35 @@
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="card shadow p-4" style="width: 100%; max-width: 420px;">
+    <div class="text-center mb-4">
+      <h1 class="fw-bold" style="color:#F5A623;">☀️ EnergieCam</h1>
+      <p class="text-muted">{{ t('Connexion à votre compte', 'Login to your account') }}</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label class="form-label">{{ t('Email', 'Email') }}</label>
+        <input type="email" class="form-control" [(ngModel)]="email" name="email" required placeholder="votre@email.com">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ t('Mot de passe', 'Password') }}</label>
+        <input type="password" class="form-control" [(ngModel)]="password" name="password" required placeholder="••••••••">
+      </div>
+      <div class="text-end mb-3">
+        <a routerLink="/forgot-password" class="text-warning fw-bold small">🔐 {{ t('Mot de passe oublié ?', 'Forgot password?') }}</a>
+      </div>
+      <button type="submit" class="btn btn-warning w-100 fw-bold" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ t('Se connecter', 'Login') }}
+      </button>
+    </form>
+
+    <div class="text-center mt-3">
+      <span class="text-muted">{{ t('Pas encore de compte ?', 'No account yet?') }}</span>
+      <a routerLink="/register" class="ms-1">{{ t('Créer un compte', 'Create account') }}</a>
+    </div>
+  </div>
+</div>

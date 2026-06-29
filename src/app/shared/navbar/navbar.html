@@ -1,0 +1,87 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top px-3" *ngIf="auth.isLoggedIn()">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" routerLink="/dashboard">
+      <span style="color:#F5A623;">Energie</span><span style="color:#27AE60;">Cam</span>
+    </a>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <button class="btn btn-sm btn-outline-secondary" (click)="toggleTheme()" [title]="t('Mode clair/sombre', 'Light/dark mode')">
+        {{ darkMode ? 'Light' : 'Dark' }}
+      </button>
+
+      <button class="btn btn-sm btn-outline-secondary" (click)="toggleLang()" [title]="t('Changer la langue', 'Change language')">
+        {{ currentLang }}
+      </button>
+
+      <a routerLink="/help" class="btn btn-sm btn-outline-secondary" [title]="t('Aide', 'Help')">?</a>
+
+<a routerLink="/advanced-tools" [queryParams]="{tab: 'info'}" class="btn btn-sm btn-outline-info" [title]="t('Info Logiciel', 'Software Info')">
+  ℹ️ {{ t('Info', 'Info') }}
+</a>
+
+<a routerLink="/advanced-tools" [queryParams]="{tab: 'info'}" class="btn btn-sm btn-outline-info" [title]="t('Info Logiciel', 'Software Info')">
+  ℹ️ {{ t('Info', 'Info') }}
+</a>
+
+<a routerLink="/advanced-tools" fragment="info" class="btn btn-sm btn-outline-info" [title]="t('Info Logiciel', 'Software Info')">
+  ℹ️ {{ t('Info', 'Info') }}
+</a>
+
+      <div class="position-relative">
+        <button class="btn btn-sm btn-outline-secondary" (click)="toggleShareMenu()" [title]="t('Partager', 'Share')">
+          {{ t('Partager', 'Share') }}
+        </button>
+        <div *ngIf="showShareMenu" class="position-absolute end-0 mt-2 bg-white shadow rounded p-2" style="width: 200px; z-index: 1050;">
+          <button class="btn btn-sm w-100 text-start mb-1" (click)="shareWhatsApp()">WhatsApp</button>
+          <button class="btn btn-sm w-100 text-start mb-1" (click)="shareEmail()">Email</button>
+          <button class="btn btn-sm w-100 text-start mb-1" (click)="shareSMS()">SMS</button>
+          <button class="btn btn-sm w-100 text-start" (click)="copyLink()">{{ t('Copier le lien', 'Copy link') }}</button>
+        </div>
+      </div>
+
+      <div class="position-relative">
+        <button class="btn btn-sm btn-outline-secondary" (click)="toggleNotifPanel()" [title]="t('Notifications', 'Notifications')">
+          {{ t('Notifications', 'Notifications') }}
+          <span *ngIf="unreadCount > 0" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill" style="font-size:0.6rem;">
+            {{ unreadCount }}
+          </span>
+        </button>
+        <div *ngIf="showNotifPanel" class="position-absolute end-0 mt-2 bg-white shadow rounded p-0" style="width: 320px; max-height: 400px; overflow-y: auto; z-index: 1050;">
+          <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+            <strong class="small">{{ t('Notifications', 'Notifications') }}</strong>
+            <button class="btn btn-link btn-sm p-0" (click)="markAllRead()">{{ t('Tout lire', 'Mark all read') }}</button>
+          </div>
+          <div *ngFor="let n of notifications" class="p-2 border-bottom small" [class.bg-light]="!n.read">
+            {{ n.text }}
+            <div class="text-muted" style="font-size: 0.7rem;">{{ n.created_at | date:'dd/MM HH:mm' }}</div>
+          </div>
+          <div *ngIf="notifications.length === 0" class="p-3 text-center text-muted small">
+            {{ t('Aucune notification.', 'No notifications.') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 ms-2">
+        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:#F5A623;color:#1A1A2E;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">
+          {{ auth.currentUser()?.name?.charAt(0)?.toUpperCase() }}
+        </div>
+        <span class="small fw-bold d-none d-md-inline">{{ auth.currentUser()?.name }}</span>
+        <button class="btn btn-sm btn-outline-danger" (click)="confirmLogout()">{{ t('Deconnexion', 'Logout') }}</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div *ngIf="showLogoutConfirm" class="modal d-block" style="background: rgba(0,0,0,0.5);" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4">
+      <div style="font-size: 3rem;">!</div>
+      <h5 class="mt-2">{{ t('Confirmer la deconnexion', 'Confirm logout') }}</h5>
+      <p class="text-muted">{{ t('Voulez-vous vraiment vous deconnecter ?', 'Do you really want to log out?') }}</p>
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-outline-secondary" (click)="cancelLogout()">{{ t('Annuler', 'Cancel') }}</button>
+        <button class="btn btn-danger" (click)="doLogout()">{{ t('Deconnecter', 'Logout') }}</button>
+      </div>
+    </div>
+  </div>
+</div>

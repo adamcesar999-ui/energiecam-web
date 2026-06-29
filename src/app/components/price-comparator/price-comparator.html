@@ -1,0 +1,62 @@
+<div class="comparator-container">
+
+  <div class="back-btn">
+    <button (click)="goToDashboard()" class="btn btn-outline-secondary">← {{ t('Retour au Dashboard', 'Back to Dashboard') }}</button>
+  </div>
+
+  <h2>💰 {{ t('Comparateur de Prix', 'Price Comparator') }}</h2>
+  <p class="subtitle">{{ t('Comparez les prix des équipements solaires chez les fournisseurs camerounais', 'Compare solar equipment prices from Cameroonian suppliers') }}</p>
+
+  <!-- Filtres -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>{{ t('Type d\'équipement', 'Equipment type') }}</label>
+      <select [(ngModel)]="selectedType">
+        <option value="">{{ t('-- Choisir un type --', '-- Choose a type --') }}</option>
+        <option *ngFor="let type of types" [value]="type">
+          {{ formatType(type) }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn-compare" (click)="compare()" [disabled]="!selectedType || loading">
+      {{ loading ? t('Chargement...', 'Loading...') : '🔍 ' + t('Comparer', 'Compare') }}
+    </button>
+  </div>
+
+  <!-- Meilleur prix -->
+  <div class="best-price" *ngIf="results?.best_price">
+    <h3>🏆 {{ t('Meilleur Prix', 'Best Price') }}</h3>
+    <div class="best-card">
+      <div class="price">{{ results.best_price.price | number }} {{ results.best_price.currency }}</div>
+      <div class="product-name">{{ results.best_price.name }}</div>
+      <div class="brand" *ngIf="results.best_price.brand">{{ results.best_price.brand }} — {{ results.best_price.model }}</div>
+      <div class="supplier">📍 {{ results.best_price.supplier.name }} — {{ results.best_price.supplier.city }}</div>
+      <div class="phone" *ngIf="results.best_price.supplier.phone">📞 {{ results.best_price.supplier.phone }}</div>
+    </div>
+  </div>
+
+  <!-- Tous les prix -->
+  <div class="all-prices" *ngIf="results?.all_prices?.length">
+    <h3>📋 {{ t('Tous les prix', 'All prices') }} ({{ results.count }} {{ t('résultats', 'results') }})</h3>
+    <div class="price-card" *ngFor="let item of results.all_prices; let i = index">
+      <div class="rank">#{{ i + 1 }}</div>
+      <div class="info">
+        <div class="product-name">{{ item.name }}</div>
+        <div class="brand" *ngIf="item.brand">{{ item.brand }} {{ item.model }}</div>
+        <div class="specs" *ngIf="item.specs">{{ item.specs }}</div>
+        <div class="supplier">📍 {{ item.supplier.name }} — {{ item.supplier.city }}</div>
+        <div class="phone" *ngIf="item.supplier.phone">📞 {{ item.supplier.phone }}</div>
+      </div>
+      <div class="price-tag">
+        {{ item.price | number }} <span>{{ item.currency }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aucun résultat -->
+  <div class="no-results" *ngIf="results?.count === 0">
+    <p>😕 {{ t('Aucun résultat trouvé pour ce type d\'équipement.', 'No results found for this equipment type.') }}</p>
+  </div>
+
+</div>

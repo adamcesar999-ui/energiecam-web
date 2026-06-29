@@ -1,0 +1,111 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">{{ t('Panneau Administrateur', 'Admin Panel') }}</h1>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" (click)="refresh()">{{ t('Actualiser', 'Refresh') }}</button>
+      <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4" *ngIf="stats">
+    <div class="col-6 col-md-3">
+      <div class="card p-3 text-center">
+        <div class="fs-2 fw-bold text-warning">{{ stats.total_users }}</div>
+        <div class="small text-muted">{{ t('Utilisateurs total', 'Total users') }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 text-center">
+        <div class="fs-2 fw-bold text-success">{{ stats.online_users }}</div>
+        <div class="small text-muted">{{ t('En ligne', 'Online') }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 text-center">
+        <div class="fs-2 fw-bold text-primary">{{ stats.total_projects }}</div>
+        <div class="small text-muted">{{ t('Projets total', 'Total projects') }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 text-center">
+        <div class="fs-2 fw-bold text-danger">{{ stats.help_messages }}</div>
+        <div class="small text-muted">{{ t('Messages aide', 'Help messages') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'users'" (click)="switchTab('users')">{{ t('Utilisateurs', 'Users') }}</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'help'" (click)="switchTab('help')">{{ t('Messages aide', 'Help messages') }}</button>
+    </li>
+  </ul>
+
+  <div *ngIf="activeTab === 'users'" class="card p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>{{ t('Statut', 'Status') }}</th>
+            <th>{{ t('Nom', 'Name') }}</th>
+            <th>Email</th>
+            <th>{{ t('Role', 'Role') }}</th>
+            <th>{{ t('Cree le', 'Created at') }}</th>
+            <th>{{ t('Projets', 'Projects') }}</th>
+            <th>{{ t('Actions', 'Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users">
+            <ng-container *ngIf="editingUser?.id !== u.id">
+              <td><span [class]="u.online ? 'text-success' : 'text-muted'">●</span> {{ u.online ? t('En ligne', 'Online') : t('Hors ligne', 'Offline') }}</td>
+              <td class="fw-bold">{{ u.name }}</td>
+              <td>{{ u.email }}</td>
+              <td><span class="badge" [class.bg-warning]="u.role === 'admin'" [class.bg-secondary]="u.role !== 'admin'" [class.text-dark]="u.role === 'admin'">{{ u.role }}</span></td>
+              <td class="small text-muted">{{ u.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ u.projects_count }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary" (click)="startEdit(u)">{{ t('Modifier', 'Edit') }}</button>
+                <button class="btn btn-sm btn-outline-danger" *ngIf="u.role !== 'admin'" (click)="deleteUser(u)">{{ t('Supprimer', 'Delete') }}</button>
+              </td>
+            </ng-container>
+
+            <ng-container *ngIf="editingUser?.id === u.id">
+              <td colspan="7">
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                  <input class="form-control" style="width:150px" [(ngModel)]="editName">
+                  <input class="form-control" style="width:200px" [(ngModel)]="editEmail">
+                  <select class="form-select" style="width:140px" [(ngModel)]="editRole">
+                    <option value="particulier">{{ t('Particulier', 'Individual') }}</option>
+                    <option value="technicien">{{ t('Technicien', 'Technician') }}</option>
+                    <option value="admin">{{ t('Administrateur', 'Administrator') }}</option>
+                  </select>
+                  <button class="btn btn-success btn-sm" (click)="saveEdit()">{{ t('Sauvegarder', 'Save') }}</button>
+                  <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">{{ t('Annuler', 'Cancel') }}</button>
+                </div>
+              </td>
+            </ng-container>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'help'" class="card p-3">
+    <h5 class="mb-3">{{ t('Messages aide recus', 'Received help messages') }}</h5>
+    <div *ngFor="let m of helpMessages" class="border-bottom py-2">
+      <div class="d-flex justify-content-between">
+        <strong>{{ m.from_user.name }} ({{ m.from_user.email }})</strong>
+        <small class="text-muted">{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</small>
+      </div>
+      <div>{{ m.content }}</div>
+    </div>
+    <div *ngIf="helpMessages.length === 0" class="text-muted text-center py-3">
+      {{ t('Aucun message aide recu.', 'No help messages received.') }}
+    </div>
+  </div>
+
+</div>

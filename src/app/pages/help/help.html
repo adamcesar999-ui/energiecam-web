@@ -1,0 +1,60 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">{{ t('Aide & Documentation', 'Help & Documentation') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6">
+
+      <div class="card p-4 mb-3">
+        <h5 class="mb-3">{{ t('Guide utilisation', 'User guide') }}</h5>
+        <div style="line-height: 1.8;">
+          <p><strong>1. {{ t('Tableau de bord', 'Dashboard') }}</strong> - {{ t('Vue ensemble, actualites energetiques, raccourcis vers tous les modules.', 'Overview, energy news, shortcuts to every module.') }}</p>
+          <p><strong>2. {{ t('Calculateur Solaire', 'Solar Calculator') }}</strong> - {{ t('Saisissez vos appareils, choisissez votre ville et obtenez un dimensionnement complet avec couts en FCFA.', 'Enter your appliances, choose your city, and get a complete sizing with costs in FCFA.') }}</p>
+          <p><strong>3. {{ t('Calculateur Eolien', 'Wind Calculator') }}</strong> - {{ t('Indiquez la puissance requise et la region pour obtenir le dimensionnement adapte.', 'Enter the required power and region to get the right turbine sizing.') }}</p>
+          <p><strong>4. {{ t('Mes Projets', 'My Projects') }}</strong> - {{ t('Tous vos calculs sont sauvegardes automatiquement et exportables en PDF.', 'All your calculations are saved automatically and can be exported as PDFs.') }}</p>
+          <p><strong>5. {{ t('Outils Avances', 'Advanced Tools') }}</strong> - {{ t('Carte interactive, meteo par ville et informations logiciel.', 'Interactive map, city weather, and software information.') }}</p>
+          <p><strong>6. {{ t('Messages', 'Messages') }}</strong> - {{ t('Discutez avec administrateur, autres utilisateurs et forum.', 'Chat with the administrator, other users, and the forum.') }}</p>
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <h5 class="mb-3">{{ t('Formules utilisees', 'Formulas used') }}</h5>
+        <div style="font-size: 0.9rem; line-height: 2;">
+          <div><strong class="text-warning">{{ t('Panneaux solaires', 'Solar panels') }} :</strong> N = (Conso_j x 1.25) / (Ensoleillement x P_panneau)</div>
+          <div><strong class="text-warning">{{ t('Capacite batteries', 'Battery capacity') }} :</strong> C = (Conso_j x Autonomie) / (0.8 x Tension)</div>
+          <div><strong class="text-warning">{{ t('Regulateur', 'Regulator') }} :</strong> I = (P_totale / Tension) x 1.25</div>
+          <div><strong class="text-warning">{{ t('Onduleur', 'Inverter') }} :</strong> P = Conso_max x 1.3</div>
+          <div><strong class="text-primary">{{ t('Puissance eolienne', 'Wind power') }} :</strong> P = 1/2 x rho x A x v3 x Cp</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-md-6">
+      <div class="card p-4">
+        <h5 class="mb-3">{{ t('Envoyer un commentaire a administrateur', 'Send a comment to the administrator') }}</h5>
+
+        <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+        <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ t('Votre message', 'Your message') }}</label>
+          <textarea class="form-control" rows="6" [placeholder]="t('Decrivez votre probleme, suggestion, ou question...', 'Describe your issue, suggestion, or question...')" [(ngModel)]="comment"></textarea>
+        </div>
+
+        <button class="btn btn-warning fw-bold" [disabled]="sending || !comment.trim()" (click)="sendComment()">
+          <span *ngIf="sending" class="spinner-border spinner-border-sm me-2"></span>
+          {{ t('Envoyer a administrateur', 'Send to administrator') }}
+        </button>
+
+        <div class="alert alert-info mt-3 mb-0">
+          {{ t('Votre message apparaitra dans la section Messages aide du panneau administrateur.', 'Your message will appear in the Help messages section of the admin panel.') }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

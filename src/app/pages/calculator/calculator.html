@@ -1,0 +1,333 @@
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">⚡ {{ t('Calculateur de Dimensionnement', 'Sizing Calculator') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">← {{ t('Retour', 'Back') }}</a>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="d-flex gap-2 mb-4">
+    <div class="flex-fill text-center p-2 rounded fw-bold"
+         [class.bg-warning]="step === 1" [class.bg-success]="step > 1" [class.text-white]="step > 1" [class.bg-light]="step < 1">
+      1. {{ t('Consommation', 'Consumption') }}
+    </div>
+    <div class="flex-fill text-center p-2 rounded fw-bold"
+         [class.bg-warning]="step === 2" [class.bg-success]="step > 2" [class.text-white]="step > 2" [class.bg-light]="step < 2">
+      2. {{ t('Localisation', 'Location') }}
+    </div>
+    <div class="flex-fill text-center p-2 rounded fw-bold"
+         [class.bg-warning]="step === 3" [class.bg-light]="step < 3">
+      3. {{ t('Résultats', 'Results') }}
+    </div>
+  </div>
+
+  <!-- ============ STEP 1 : CONSOMMATION ============ -->
+  <div *ngIf="step === 1" class="card p-4">
+    <h4 class="mb-3">🏠 {{ t('Saisie de la Consommation Énergétique', 'Energy Consumption Input') }}</h4>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <strong>{{ t('Appareils électriques', 'Electrical appliances') }}</strong>
+      <button class="btn btn-sm btn-outline-primary" (click)="addAppliance()">+ {{ t('Ajouter un appareil', 'Add appliance') }}</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>{{ t('Appareil', 'Appliance') }}</th>
+            <th>{{ t('Puissance (W)', 'Power (W)') }}</th>
+            <th>{{ t('Heures/jour', 'Hours/day') }}</th>
+            <th>{{ t('Quantité', 'Quantity') }}</th>
+            <th>{{ t('Conso (Wh/j)', 'Cons. (Wh/d)') }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let app of appliances; let i = index">
+            <td><input class="form-control" [(ngModel)]="app.name"></td>
+            <td><input type="number" class="form-control" [(ngModel)]="app.power"></td>
+            <td><input type="number" class="form-control" [(ngModel)]="app.hours"></td>
+            <td><input type="number" class="form-control" [(ngModel)]="app.qty"></td>
+            <td class="fw-bold text-warning">{{ app.power * app.hours * app.qty | number:'1.0-0' }}</td>
+            <td><button class="btn btn-sm btn-outline-danger" (click)="removeAppliance(i)">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning d-flex justify-content-between fw-bold">
+      <span>{{ t('Consommation totale journalière :', 'Total daily consumption:') }}</span>
+      <span>{{ totalConsumption | number:'1.0-0' }} Wh/{{ t('jour', 'day') }}</span>
+    </div>
+
+    <button class="btn btn-warning fw-bold" (click)="goToStep(2)">{{ t('Suivant', 'Next') }} →</button>
+  </div>
+
+  <!-- ============ STEP 2 : LOCALISATION ============ -->
+  <div *ngIf="step === 2" class="card p-4">
+    <h4 class="mb-3">📍 {{ t('Localisation & Paramètres', 'Location & Parameters') }}</h4>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="form-label">{{ t('Ville / Région', 'City / Region') }}</label>
+          <select class="form-select" [(ngModel)]="selectedCity" (ngModelChange)="onCityChange()" [compareWith]="cityCompare">
+            <option [ngValue]="null">{{ t('-- Choisir une ville --', '-- Choose a city --') }}</option>
+            <option *ngFor="let c of cities" [ngValue]="c">{{ c.name }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="loadingPvgis" class="alert alert-info">
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          {{ t('Récupération des données PVGIS en cours...', 'Fetching PVGIS data...') }}
+        </div>
+
+        <div *ngIf="pvgisSource && !loadingPvgis" class="alert"
+             [class.alert-success]="pvgisSource.includes('✅')"
+             [class.alert-warning]="pvgisSource.includes('⚠️')">
+          {{ pvgisSource }}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ t('Ensoleillement (kWh/m²/jour)', 'Sunshine (kWh/m²/day)') }}</label>
+          <input type="number" step="0.1" class="form-control" [(ngModel)]="sunHours">
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="form-label">{{ t('Jours d\'autonomie', 'Autonomy days') }}</label>
+          <select class="form-select" [(ngModel)]="autonomyDays">
+            <option [ngValue]="1">1 {{ t('jour', 'day') }}</option>
+            <option [ngValue]="2">2 {{ t('jours', 'days') }}</option>
+            <option [ngValue]="3">3 {{ t('jours', 'days') }}</option>
+            <option [ngValue]="5">5 {{ t('jours', 'days') }}</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">{{ t('Tension du système (V)', 'System voltage (V)') }}</label>
+          <select class="form-select" [(ngModel)]="voltage">
+            <option [ngValue]="12">12V</option>
+            <option [ngValue]="24">24V</option>
+            <option [ngValue]="48">48V</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">{{ t('Puissance panneau (Wc)', 'Panel power (Wp)') }}</label>
+          <select class="form-select" [(ngModel)]="panelPower">
+            <option [ngValue]="200">200 Wc</option>
+            <option [ngValue]="300">300 Wc</option>
+            <option [ngValue]="400">400 Wc</option>
+            <option [ngValue]="500">500 Wc</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" (click)="goToStep(1)">← {{ t('Précédent', 'Previous') }}</button>
+      <button class="btn btn-warning fw-bold" (click)="calculateSolar()">⚡ {{ t('Calculer', 'Calculate') }}</button>
+    </div>
+  </div>
+
+  <!-- ============ STEP 3 : RÉSULTATS ============ -->
+  <div id="solarResultsSection" *ngIf="step === 3 && results">
+
+    <div *ngIf="saveMessage" class="alert alert-success">{{ saveMessage }}</div>
+    <div *ngIf="saving" class="alert alert-info">
+      <span class="spinner-border spinner-border-sm me-2"></span>{{ t('Sauvegarde en cours...', 'Saving...') }}
+    </div>
+
+    <!-- Résumé -->
+    <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #fff8e1, #e8f5e9);">
+      <h4 class="mb-3">✅ {{ t('Résultats du Dimensionnement Solaire', 'Solar Sizing Results') }} – {{ results.city }}</h4>
+      <div class="row text-center g-3">
+        <div class="col-6 col-md-2">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-warning">{{ results.nPanels }}</div>
+            <div class="small text-muted">{{ t('Panneaux solaires', 'Solar panels') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-warning">{{ results.actualPower }}</div>
+            <div class="small text-muted">{{ t('Wc totaux', 'Total Wp') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-warning">{{ results.battCapAh }}</div>
+            <div class="small text-muted">{{ t('Ah batteries', 'Ah batteries') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-warning">{{ results.nBatt }}</div>
+            <div class="small text-muted">{{ t('Batteries', 'Batteries') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-warning">{{ results.regCurrent }}A</div>
+            <div class="small text-muted">{{ t('Régulateur MPPT', 'MPPT Controller') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-warning">{{ results.inverterKva }}</div>
+            <div class="small text-muted">{{ t('kVA Onduleur', 'kVA Inverter') }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options Panneaux -->
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">🛒 {{ t('Options de panneaux disponibles (6 types)', 'Available panel options (6 types)') }}</h5>
+      <div class="row g-3">
+        <div class="col-md-4" *ngFor="let p of results.panelOptions">
+          <div class="border rounded p-3 h-100"
+               [class.border-warning]="p.recommended"
+               [class.border-2]="p.recommended">
+            <span *ngIf="p.recommended" class="badge bg-warning text-dark mb-2">⭐ {{ t('Recommandé', 'Recommended') }}</span>
+            <div class="fw-bold">{{ p.name }}</div>
+            <div class="small text-muted">🏭 {{ p.brand }}</div>
+            <div class="small text-muted">⚡ {{ t('Rendement', 'Efficiency') }} : {{ p.eff }}</div>
+            <div class="small text-muted">🛡️ {{ t('Garantie', 'Warranty') }} : {{ p.warranty }}</div>
+            <div class="small text-muted">📦 {{ t('Qté nécessaire', 'Qty needed') }} : <strong>{{ p.qtyNeeded }}</strong></div>
+            <div class="fw-bold text-success mt-2">{{ p.price | number:'1.0-0' }} FCFA/{{ t('unité', 'unit') }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options Batteries -->
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">🔋 {{ t('Options de batteries disponibles', 'Available battery options') }}</h5>
+      <div class="row g-3">
+        <div class="col-md-3" *ngFor="let b of results.battOptions">
+          <div class="border rounded p-3 h-100"
+               [class.border-warning]="b.recommended"
+               [class.border-2]="b.recommended">
+            <span *ngIf="b.recommended" class="badge bg-warning text-dark mb-2">⭐ {{ t('Recommandé', 'Recommended') }}</span>
+            <div class="fw-bold">{{ b.name }}</div>
+            <div class="small text-muted">🏭 {{ b.brand }}</div>
+            <div class="small text-muted">🔄 {{ t('Cycles', 'Cycles') }} : {{ b.cycles }}</div>
+            <div class="small text-muted">🛡️ {{ t('Garantie', 'Warranty') }} : {{ b.warranty }}</div>
+            <div class="fw-bold text-success mt-2">{{ b.price | number:'1.0-0' }} FCFA/{{ t('unité', 'unit') }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coûts -->
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">💰 {{ t('Estimation des Coûts', 'Cost Estimation') }}</h5>
+      <table class="table">
+        <tbody>
+          <tr><td>☀️ {{ t('Panneaux', 'Panels') }} ({{ results.nPanels }} {{ t('unités', 'units') }})</td><td class="text-end fw-bold text-warning">{{ results.costPanels | number:'1.0-0' }} FCFA</td></tr>
+          <tr><td>🔋 {{ t('Batteries', 'Batteries') }} ({{ results.nBatt }} {{ t('unités', 'units') }})</td><td class="text-end fw-bold text-warning">{{ results.costBatt | number:'1.0-0' }} FCFA</td></tr>
+          <tr><td>⚡ {{ t('Régulateur MPPT', 'MPPT Controller') }} {{ results.regCurrent }}A</td><td class="text-end fw-bold text-warning">{{ results.costReg | number:'1.0-0' }} FCFA</td></tr>
+          <tr><td>🔌 {{ t('Onduleur', 'Inverter') }} {{ results.inverterKva }} kVA</td><td class="text-end fw-bold text-warning">{{ results.costInv | number:'1.0-0' }} FCFA</td></tr>
+          <tr><td>🔧 {{ t('Installation & câblage (15%)', 'Installation & wiring (15%)') }}</td><td class="text-end fw-bold text-warning">{{ results.costInstall | number:'1.0-0' }} FCFA</td></tr>
+          <tr class="table-warning">
+            <td class="fw-bold">💰 TOTAL</td>
+            <td class="text-end fs-5 fw-bold text-success">{{ results.costTotal | number:'1.0-0' }} FCFA</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ROI -->
+    <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e8f5e9, #f1f8e9);">
+      <h5 class="mb-3">📈 {{ t('Retour sur Investissement (ROI)', 'Return on Investment (ROI)') }}</h5>
+      <div class="row text-center g-3 mb-3">
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-success">{{ results.roi.productionAnnuelle | number:'1.0-0' }}</div>
+            <div class="small text-muted">{{ t('kWh produits/an', 'kWh produced/year') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-success">{{ results.roi.economieAnnuelle | number:'1.0-0' }}</div>
+            <div class="small text-muted">{{ t('FCFA économisés/an', 'FCFA saved/year') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-warning">{{ results.roi.paybackYears }}</div>
+            <div class="small text-muted">{{ t('ans avant remboursement', 'years to payback') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-primary">{{ results.roi.roi20ans }}</div>
+            <div class="small text-muted">{{ t('% ROI sur 20 ans', '% ROI over 20 years') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <table class="table table-bordered">
+        <thead class="table-success">
+          <tr>
+            <th>{{ t('Période', 'Period') }}</th>
+            <th class="text-end">{{ t('Économies cumulées', 'Cumulative savings') }}</th>
+            <th class="text-end">{{ t('Bénéfice net', 'Net benefit') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>⏱️ {{ t('Remboursement', 'Payback') }}</td>
+            <td class="text-end">{{ results.roi.paybackYears }} {{ t('ans', 'years') }}</td>
+            <td class="text-end text-muted">—</td>
+          </tr>
+          <tr>
+            <td>📅 {{ t('Sur 20 ans', 'Over 20 years') }}</td>
+            <td class="text-end">{{ (results.roi.economieAnnuelle * 20) | number:'1.0-0' }} FCFA</td>
+            <td class="text-end fw-bold text-success">+ {{ results.roi.benefice20ans | number:'1.0-0' }} FCFA</td>
+          </tr>
+          <tr class="table-success">
+            <td>📅 {{ t('Sur 25 ans', 'Over 25 years') }}</td>
+            <td class="text-end">{{ (results.roi.economieAnnuelle * 25) | number:'1.0-0' }} FCFA</td>
+            <td class="text-end fw-bold text-success">+ {{ results.roi.benefice25ans | number:'1.0-0' }} FCFA</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-success mt-2 mb-0">
+        💡 {{ t('Basé sur les tarifs', 'Based on') }} <strong>SOCADEL</strong>.
+        {{ t('Consommation mensuelle estimée', 'Estimated monthly consumption') }} : <strong>{{ results.roi.consommationMensuelle | number:'1.0-0' }} kWh</strong> —
+        {{ t('Facture mensuelle économisée', 'Monthly bill saved') }} : <strong>{{ results.roi.factureMensuelle | number:'1.0-0' }} FCFA</strong>.
+        {{ t('Votre installation se rentabilise en', 'Your installation pays back in') }} <strong>{{ results.roi.paybackYears }} {{ t('ans', 'years') }}</strong>
+        {{ t('et génère un bénéfice net de', 'and generates a net benefit of') }}
+        <strong>{{ results.roi.benefice20ans | number:'1.0-0' }} FCFA {{ t('sur 20 ans', 'over 20 years') }}</strong>.
+      </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">📊 {{ t('Analyse Graphique', 'Graphical Analysis') }}</h5>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <canvas id="consoChart" height="300"></canvas>
+        </div>
+        <div class="col-md-6 mb-3">
+          <canvas id="costChart" height="300"></canvas>
+        </div>
+        <div class="col-12 mb-3">
+          <canvas id="prodChart" height="150"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="d-flex gap-2 mb-4 no-print">
+      <button class="btn btn-outline-secondary" (click)="resetCalculator()">🔄 {{ t('Nouveau calcul', 'New calculation') }}</button>
+      <a routerLink="/projects" class="btn btn-warning fw-bold">📁 {{ t('Voir mes projets', 'View my projects') }}</a>
+    </div>
+
+  </div>
+
+</div>

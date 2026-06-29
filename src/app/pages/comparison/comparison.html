@@ -1,0 +1,121 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">{{ t('Comparaison des Systemes Energetiques', 'Energy System Comparison') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+  </div>
+
+  <div class="card p-4 mb-4">
+    <h5 class="mb-3">{{ t('Parametres de comparaison', 'Comparison parameters') }}</h5>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">{{ t('Consommation (Wh/jour)', 'Consumption (Wh/day)') }}</label>
+        <input type="number" class="form-control" [(ngModel)]="consumption">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ t('Ville', 'City') }}</label>
+        <select class="form-select" [(ngModel)]="city" (ngModelChange)="onCityChange()">
+          <option *ngFor="let c of cities" [value]="c.name">{{ c.name }}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ t('Soleil (kWh/m2/j)', 'Sun (kWh/m2/d)') }}</label>
+        <input type="number" step="0.1" class="form-control" [(ngModel)]="sunHours">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ t('Vent (m/s)', 'Wind (m/s)') }}</label>
+        <input type="number" step="0.1" class="form-control" [(ngModel)]="windSpeed">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ t('Budget FCFA', 'Budget FCFA') }} <small class="text-muted">{{ t('(optionnel)', '(optional)') }}</small></label>
+        <input type="number" class="form-control" [(ngModel)]="budget" placeholder="500000">
+      </div>
+    </div>
+    <button class="btn btn-warning fw-bold mt-3" (click)="compare()">{{ t('Comparer les 3 systemes', 'Compare the 3 systems') }}</button>
+  </div>
+
+  <div *ngIf="calculated">
+
+    <div class="alert alert-success text-center fs-5 fw-bold mb-4">
+      {{ t('Meilleur systeme pour votre cas :', 'Best system for your case:') }} {{ getBestSystem() }}
+    </div>
+
+    <div class="card p-4 mb-4">
+      <h5 class="mb-3">{{ t('Tableau Comparatif Detaille', 'Detailed Comparison Table') }}</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered text-center align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>{{ t('Critere', 'Criterion') }}</th>
+              <th>{{ t('Solaire', 'Solar') }}</th>
+              <th>{{ t('Eolien', 'Wind') }}</th>
+              <th>{{ t('Hybride', 'Hybrid') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="fw-bold text-start">{{ t('Cout total', 'Total cost') }}</td>
+              <td class="text-warning fw-bold">{{ solarResult.totalCost | number:'1.0-0' }} FCFA</td>
+              <td class="text-primary fw-bold">{{ windResult.totalCost | number:'1.0-0' }} FCFA</td>
+              <td class="text-success fw-bold">{{ hybridResult.totalCost | number:'1.0-0' }} FCFA</td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-start">{{ t('Score global', 'Overall score') }}</td>
+              <td><span class="badge bg-warning text-dark fs-6">{{ solarResult.score }}/100</span></td>
+              <td><span class="badge bg-primary fs-6">{{ windResult.score }}/100</span></td>
+              <td><span class="badge bg-success fs-6">{{ [hybridResult.score, 100].join('/') | slice:0:6 }}</span></td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-start">{{ t('Fiabilite', 'Reliability') }}</td>
+              <td>{{ translateValue(solarResult.reliability) }}</td>
+              <td>{{ translateValue(windResult.reliability) }}</td>
+              <td>{{ translateValue(hybridResult.reliability) }}</td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-start">{{ t('Maintenance', 'Maintenance') }}</td>
+              <td>{{ translateValue(solarResult.maintenance) }}</td>
+              <td>{{ translateValue(windResult.maintenance) }}</td>
+              <td>{{ translateValue(hybridResult.maintenance) }}</td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-start">{{ t('Duree de vie', 'Lifespan') }}</td>
+              <td>{{ translateValue(solarResult.lifespan) }}</td>
+              <td>{{ translateValue(windResult.lifespan) }}</td>
+              <td>{{ translateValue(hybridResult.lifespan) }}</td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-start">{{ t('Depend du soleil', 'Depends on sun') }}</td>
+              <td>{{ t('Oui', 'Yes') }}</td>
+              <td>{{ t('Non', 'No') }}</td>
+              <td>{{ t('Partiellement', 'Partially') }}</td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-start">{{ t('Depend du vent', 'Depends on wind') }}</td>
+              <td>{{ t('Non', 'No') }}</td>
+              <td>{{ t('Oui', 'Yes') }}</td>
+              <td>{{ t('Partiellement', 'Partially') }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card p-4 mb-4">
+      <h5 class="mb-3">{{ t('Graphique Comparatif', 'Comparison Chart') }}</h5>
+      <canvas id="compChart" height="120"></canvas>
+    </div>
+
+    <div class="card p-4 mb-4">
+      <h5 class="mb-3">{{ t('Recommandation IA Claude', 'Claude AI Recommendation') }}</h5>
+      <div *ngIf="aiLoading" class="d-flex align-items-center gap-2 text-muted">
+        <span class="spinner-border spinner-border-sm"></span>
+        <span>{{ t('IA analyse votre situation...', 'AI is analyzing your situation...') }}</span>
+      </div>
+      <div *ngIf="aiRecommendation && !aiLoading" style="white-space: pre-wrap;">
+        {{ aiRecommendation }}
+      </div>
+    </div>
+
+  </div>
+
+</div>

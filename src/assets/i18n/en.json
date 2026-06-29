@@ -1,0 +1,76 @@
+{
+  "NAV": {
+    "DASHBOARD": "Dashboard",
+    "LOGOUT": "Logout"
+  },
+  "DASHBOARD": {
+    "TITLE": "Dashboard",
+    "WELCOME": "Welcome,",
+    "SOLAR_CALC": "Solar Calculator",
+    "SOLAR_DESC": "Size your solar installation",
+    "WIND_CALC": "Wind Calculator",
+    "WIND_DESC": "Estimate your wind turbine power",
+    "PROJECTS": "My Projects",
+    "PROJECTS_DESC": "Manage and track your energy projects",
+    "ADVANCED": "Advanced Tools",
+    "ADVANCED_DESC": "Advanced calculation and analysis tools",
+    "MESSAGES": "Messages",
+    "MESSAGES_DESC": "Communicate with the community",
+    "AI": "AI Assistant",
+    "AI_DESC": "Get intelligent recommendations",
+    "COMPARISON": "System Comparison",
+    "COMPARISON_DESC": "Compare solar, wind and hybrid",
+    "PRICE_COMPARATOR": "Price Comparator",
+    "PRICE_COMPARATOR_DESC": "Find the best prices in Cameroon",
+    "ADMIN": "Administrator",
+    "ADMIN_DESC": "Manage users and the system",
+    "NEWS_TITLE": "Renewable Energy News – Africa & World",
+    "LOADING_NEWS": "Loading news...",
+    "NO_NEWS": "No news available.",
+    "READ_MORE": "Read more →"
+  },
+  "LOGIN": {
+    "TITLE": "Login to your account",
+    "EMAIL": "Email",
+    "PASSWORD": "Password",
+    "SUBMIT": "Login",
+    "NO_ACCOUNT": "Don't have an account?",
+    "CREATE": "Create account",
+    "FORGOT": "Forgot password?"
+  },
+  "FORGOT": {
+    "TITLE": "Forgot Password",
+    "SUBTITLE": "Enter your email to receive a reset link",
+    "EMAIL": "Email address",
+    "SUBMIT": "Send link",
+    "SENDING": "Sending...",
+    "SUCCESS_TITLE": "Email sent!",
+    "SUCCESS_MSG": "A reset link has been sent to",
+    "SUCCESS_CHECK": "Check your Gmail inbox and click the link.",
+    "BACK": "← Back to login"
+  },
+  "RESET": {
+    "TITLE": "New Password",
+    "SUBTITLE": "Choose a new password for your account",
+    "PASSWORD": "New password",
+    "CONFIRM": "Confirm password",
+    "SUBMIT": "Reset password",
+    "LOADING": "Resetting...",
+    "SUCCESS_TITLE": "Password changed!",
+    "SUCCESS_MSG": "Your password has been reset successfully.",
+    "SUCCESS_REDIRECT": "You will be redirected to the login page...",
+    "BACK": "← Back to login"
+  },
+  "PRICE_COMPARATOR": {
+    "TITLE": "Price Comparator",
+    "SUBTITLE": "Compare solar equipment prices from Cameroonian suppliers",
+    "TYPE_LABEL": "Equipment type",
+    "TYPE_PLACEHOLDER": "-- Choose a type --",
+    "COMPARE_BTN": "Compare",
+    "LOADING": "Loading...",
+    "BEST_PRICE": "Best Price",
+    "ALL_PRICES": "All prices",
+    "NO_RESULTS": "No results found for this equipment type.",
+    "BACK": "← Back to Dashboard"
+  }
+}

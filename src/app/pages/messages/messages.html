@@ -1,0 +1,80 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">{{ t('Messagerie', 'Messaging') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+  </div>
+
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'inbox'" (click)="switchTab('inbox')">{{ t('Boite de reception', 'Inbox') }}</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'forum'" (click)="switchTab('forum')">{{ t('Forum', 'Forum') }}</button>
+    </li>
+  </ul>
+
+  <div *ngIf="activeTab === 'inbox'" class="card" style="height: 500px;">
+    <div class="row g-0 h-100">
+      <div class="col-3 border-end overflow-auto">
+        <div class="p-2 fw-bold small text-muted border-bottom">{{ t('Conversations', 'Conversations') }}</div>
+        <div *ngFor="let u of chatUsers"
+             class="p-2 cursor-pointer"
+             [class.bg-light]="selectedUser?.id === u.id"
+             style="cursor:pointer;"
+             (click)="selectUser(u)">
+          <span [class]="u.online ? 'text-success' : 'text-muted'">●</span>
+          {{ u.role === 'admin' ? '[Admin] ' : '' }}{{ u.name }}
+        </div>
+      </div>
+      <div class="col-9 d-flex flex-column">
+        <div class="p-2 border-bottom fw-bold">
+          {{ selectedUser ? (selectedUser.role === 'admin' ? '[Admin] ' : '') + selectedUser.name : t('Selectionnez une conversation', 'Select a conversation') }}
+        </div>
+        <div class="flex-grow-1 overflow-auto p-2 d-flex flex-column gap-2">
+          <div *ngFor="let m of conversation"
+               class="p-2 rounded"
+               style="max-width: 75%;"
+               [class.align-self-end]="m.from_user_id === auth.currentUser()?.id"
+               [class.bg-primary]="m.from_user_id === auth.currentUser()?.id"
+               [class.text-white]="m.from_user_id === auth.currentUser()?.id"
+               [class.bg-light]="m.from_user_id !== auth.currentUser()?.id">
+            {{ m.content }}
+            <div class="small opacity-75 mt-1">{{ m.created_at | date:'HH:mm' }}</div>
+          </div>
+          <div *ngIf="conversation.length === 0" class="text-muted text-center mt-3">
+            {{ t('Aucun message. Envoyez le premier !', 'No messages. Send the first one!') }}
+          </div>
+        </div>
+        <div class="p-2 border-top d-flex gap-2">
+          <input class="form-control" [placeholder]="t('Votre message...', 'Your message...')" [(ngModel)]="chatInput" (keyup.enter)="sendMsg()">
+          <button class="btn btn-primary" (click)="sendMsg()">{{ t('Envoyer', 'Send') }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'forum'" class="card p-3">
+    <h5 class="mb-3">{{ t('Forum communautaire', 'Community forum') }}</h5>
+    <div style="max-height: 400px; overflow-y: auto;">
+      <div *ngFor="let p of forumPosts" class="border-bottom py-2">
+        <div class="d-flex justify-content-between">
+          <strong>{{ p.from_user?.role === 'admin' ? '[Admin] ' : '' }}{{ p.from_user?.name }}</strong>
+          <div>
+            <small class="text-muted me-2">{{ p.created_at | date:'dd/MM HH:mm' }}</small>
+            <button *ngIf="auth.currentUser()?.role === 'admin'" class="btn btn-sm btn-outline-danger" (click)="deleteForumPost(p.id)">x</button>
+          </div>
+        </div>
+        <div>{{ p.content }}</div>
+      </div>
+      <div *ngIf="forumPosts.length === 0" class="text-muted text-center py-3">
+        {{ t('Aucun message dans le forum.', 'No messages in the forum.') }}
+      </div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <input class="form-control" [placeholder]="t('Votre message au forum...', 'Your forum message...')" [(ngModel)]="forumInput" (keyup.enter)="postForum()">
+      <button class="btn btn-success" (click)="postForum()">{{ t('Publier', 'Post') }}</button>
+    </div>
+  </div>
+
+</div>

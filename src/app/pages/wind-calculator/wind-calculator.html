@@ -1,0 +1,187 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">{{ t('Dimensionnement Eolien', 'Wind Sizing') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+  </div>
+
+  <div class="card p-4 mb-3" *ngIf="!results">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="form-label">{{ t('Puissance requise (W)', 'Required power (W)') }}</label>
+          <input type="number" class="form-control" [(ngModel)]="requiredPower">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">{{ t('Region', 'Region') }}</label>
+          <select class="form-select" [(ngModel)]="selectedRegion" (ngModelChange)="onRegionChange()" [compareWith]="regionCompare">
+            <option [ngValue]="null">{{ t('-- Choisir une region --', '-- Choose a region --') }}</option>
+            <option *ngFor="let r of regions" [ngValue]="r">{{ r.name }} - {{ r.wind }} m/s</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">{{ t('Vitesse moyenne du vent (m/s)', 'Average wind speed (m/s)') }}</label>
+          <input type="number" step="0.1" class="form-control" [(ngModel)]="windSpeed">
+          <small class="text-muted">{{ t('Moyenne Cameroun : 2 a 5 m/s selon region', 'Cameroon average: 2 to 5 m/s depending on region') }}</small>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="form-label">{{ t('Efficacite turbine (%)', 'Turbine efficiency (%)') }}</label>
+          <input type="number" class="form-control" [(ngModel)]="efficiency">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">{{ t('Densite de air (kg/m3)', 'Air density (kg/m3)') }}</label>
+          <input type="number" step="0.01" class="form-control" [(ngModel)]="airDensity">
+        </div>
+        <div class="alert alert-info mt-4">
+          {{ t('La puissance eolienne suit la loi', 'Wind power follows') }} <strong>P = 1/2 x rho x A x v3 x Cp</strong>.
+          {{ t('Le coefficient de Betz limite le rendement maximal theorique a 59%.', 'The Betz coefficient limits the theoretical maximum efficiency to 59%.') }}
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary fw-bold" (click)="calculateWind()">{{ t('Calculer', 'Calculate') }}</button>
+  </div>
+
+  <div *ngIf="results">
+
+    <div *ngIf="saveMessage" class="alert alert-success">{{ saveMessage }}</div>
+    <div *ngIf="saving" class="alert alert-info">
+      <span class="spinner-border spinner-border-sm me-2"></span>{{ t('Sauvegarde en cours...', 'Saving...') }}
+    </div>
+
+    <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e3f2fd, #e8f5e9);">
+      <h4 class="mb-3">{{ t('Resultats Dimensionnement Eolien', 'Wind Sizing Results') }} - {{ results.region }}</h4>
+      <div class="row text-center g-3">
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-4 fw-bold text-primary">{{ results.A }}</div>
+            <div class="small text-muted">m2 {{ t('surface balayee', 'swept area') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-4 fw-bold text-primary">{{ results.D }}</div>
+            <div class="small text-muted">m {{ t('diametre rotor', 'rotor diameter') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-4 fw-bold text-primary">{{ results.mast }}</div>
+            <div class="small text-muted">m {{ t('hauteur mat', 'mast height') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-4 fw-bold text-primary">{{ results.nTurb }}</div>
+            <div class="small text-muted">{{ t('eolienne(s)', 'wind turbine(s)') }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">{{ t('Options eoliennes disponibles', 'Available wind turbine options') }}</h5>
+      <div class="row g-3">
+        <div class="col-md-4" *ngFor="let turbine of results.turbineOptions">
+          <div class="border rounded p-3 h-100"
+               [class.border-primary]="turbine.recommended"
+               [class.border-2]="turbine.recommended">
+            <span *ngIf="turbine.recommended" class="badge bg-primary mb-2">{{ t('Recommande', 'Recommended') }}</span>
+            <div class="fw-bold">{{ turbine.name }}</div>
+            <div class="small text-muted">{{ turbine.brand }}</div>
+            <div class="fw-bold text-success mt-2">{{ turbine.price | number:'1.0-0' }} FCFA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning fw-bold d-flex justify-content-between fs-5">
+      <span>{{ t('Cout total estime :', 'Estimated total cost:') }}</span>
+      <span class="text-success">{{ results.totalCost | number:'1.0-0' }} FCFA</span>
+    </div>
+
+    <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e3f2fd, #e8f5e9);">
+      <h5 class="mb-3">{{ t('Retour sur Investissement (ROI)', 'Return on Investment (ROI)') }}</h5>
+      <div class="row text-center g-3 mb-3">
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-success">{{ results.roi.productionAnnuelle | number:'1.0-0' }}</div>
+            <div class="small text-muted">{{ t('kWh produits/an', 'kWh produced/year') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-success">{{ results.roi.economieAnnuelle | number:'1.0-0' }}</div>
+            <div class="small text-muted">{{ t('FCFA economises/an', 'FCFA saved/year') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-warning">{{ results.roi.paybackYears }}</div>
+            <div class="small text-muted">{{ t('ans avant remboursement', 'years to payback') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-3 fw-bold text-primary">{{ results.roi.roi20ans }}</div>
+            <div class="small text-muted">{{ t('% ROI sur 20 ans', '% ROI over 20 years') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <table class="table table-bordered">
+        <thead class="table-primary">
+          <tr>
+            <th>{{ t('Periode', 'Period') }}</th>
+            <th class="text-end">{{ t('Economies cumulees', 'Cumulative savings') }}</th>
+            <th class="text-end">{{ t('Benefice net', 'Net benefit') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ t('Remboursement', 'Payback') }}</td>
+            <td class="text-end">{{ results.roi.paybackYears }} {{ t('ans', 'years') }}</td>
+            <td class="text-end text-muted">-</td>
+          </tr>
+          <tr>
+            <td>{{ t('Sur 20 ans', 'Over 20 years') }}</td>
+            <td class="text-end">{{ (results.roi.economieAnnuelle * 20) | number:'1.0-0' }} FCFA</td>
+            <td class="text-end fw-bold text-success">+ {{ results.roi.benefice20ans | number:'1.0-0' }} FCFA</td>
+          </tr>
+          <tr class="table-success">
+            <td>{{ t('Sur 25 ans', 'Over 25 years') }}</td>
+            <td class="text-end">{{ (results.roi.economieAnnuelle * 25) | number:'1.0-0' }} FCFA</td>
+            <td class="text-end fw-bold text-success">+ {{ results.roi.benefice25ans | number:'1.0-0' }} FCFA</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-info mt-2 mb-0">
+        {{ t('Base sur les tarifs SOCADEL. Consommation mensuelle estimee :', 'Based on SOCADEL rates. Estimated monthly consumption:') }}
+        <strong>{{ results.roi.consommationMensuelle | number:'1.0-0' }} kWh</strong> -
+        {{ t('Facture mensuelle economisee :', 'Monthly bill saved:') }}
+        <strong>{{ results.roi.factureMensuelle | number:'1.0-0' }} FCFA</strong>.
+      </div>
+    </div>
+
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">{{ t('Analyse Graphique', 'Graphical Analysis') }}</h5>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <canvas id="windSpeedChart" height="300"></canvas>
+        </div>
+        <div class="col-md-6 mb-3">
+          <canvas id="turbineChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+      <button class="btn btn-outline-secondary btn-sm" (click)="reset()">{{ t('Nouveau calcul', 'New calculation') }}</button>
+      <a routerLink="/projects" class="btn btn-warning fw-bold btn-sm">{{ t('Voir mes projets', 'View my projects') }}</a>
+    </div>
+
+  </div>
+
+</div>

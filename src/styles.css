@@ -1,1 +1,140 @@
-/* You can add global styles to this file, and also import other style files */
+/* ===== MODE SOMBRE ===== */
+body.dark-mode {
+  background-color: #1a1a2e !important;
+  color: #ecf0f1 !important;
+}
+
+body.dark-mode .card,
+body.dark-mode .navbar,
+body.dark-mode .table,
+body.dark-mode .modal-content {
+  background-color: #16213e !important;
+  color: #ecf0f1 !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+  background-color: #0f3460 !important;
+  color: #ecf0f1 !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .table-light,
+body.dark-mode thead {
+  background-color: #0f3460 !important;
+  color: #ecf0f1 !important;
+}
+
+body.dark-mode .text-muted {
+  color: #bdc3c7 !important;
+}
+
+body.dark-mode .bg-light {
+  background-color: #0f3460 !important;
+  color: #ecf0f1 !important;
+}
+
+body.dark-mode .border,
+body.dark-mode .border-end,
+body.dark-mode .border-bottom,
+body.dark-mode .border-top {
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* ===== AVATAR NAVBAR ===== */
+.user-avatar-circle {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  border-radius: 50% !important;
+  background-color: #F5A623;
+  color: #1A1A2E;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* ===== RESPONSIVE GLOBAL ===== */
+@media (max-width: 575px) {
+  .navbar-brand { font-size: 1rem; }
+  .container { padding-left: 12px; padding-right: 12px; }
+  h1 { font-size: 1.4rem !important; }
+  h2 { font-size: 1.2rem !important; }
+  h4, h5 { font-size: 1rem !important; }
+  .btn { font-size: 0.8rem; padding: 6px 10px; }
+  .card { padding: 12px !important; }
+  .fs-2 { font-size: 1.3rem !important; }
+  .fs-3 { font-size: 1.1rem !important; }
+  .table { font-size: 0.78rem; }
+  .table td, .table th { padding: 6px 8px; }
+  canvas { max-height: 250px; }
+  .alert { font-size: 0.82rem; }
+}
+
+@media (min-width: 576px) and (max-width: 991px) {
+  h1 { font-size: 1.6rem !important; }
+  .card { padding: 16px !important; }
+  canvas { max-height: 300px; }
+  .btn { font-size: 0.85rem; }
+}
+
+@media (min-width: 1400px) {
+  .container { max-width: 1320px; }
+  h1 { font-size: 2.2rem; }
+  .card { padding: 32px !important; }
+  .btn { font-size: 1rem; padding: 12px 24px; }
+  canvas { max-height: 500px; }
+}
+
+@media (max-width: 768px) {
+  .navbar { padding: 8px 12px; }
+  .navbar .btn { padding: 4px 8px; font-size: 0.75rem; }
+  .navbar-brand { font-size: 1.1rem; }
+}
+
+@media (max-width: 575px) {
+  #map { height: 300px !important; }
+}
+
+@media (min-width: 576px) and (max-width: 991px) {
+  #map { height: 400px !important; }
+}
+
+@media (min-width: 1400px) {
+  #map { height: 650px !important; }
+}
+
+@media (max-width: 575px) {
+  .col-3 { display: none; }
+  .col-9 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; }
+}
+
+@media (max-width: 768px) {
+  .table-responsive { font-size: 0.78rem; }
+}
+
+@media (max-width: 575px) {
+  .row canvas { margin-bottom: 20px; }
+}
+
+/* ===== POSITION ABSOLUTE DARK MODE ===== */
+body.dark-mode .position-absolute.bg-white {
+  background-color: #16213e !important;
+  color: #ecf0f1 !important;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+body.dark-mode .btn-outline-secondary {
+  color: #ecf0f1 !important;
+  border-color: rgba(255,255,255,0.3) !important;
+}
+
+body.dark-mode .btn-link {
+  color: #F5A623 !important;
+}

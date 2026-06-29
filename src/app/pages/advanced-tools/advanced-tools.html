@@ -1,0 +1,143 @@
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">{{ t('Outils Avances', 'Advanced Tools') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+  </div>
+
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'map'" (click)="switchTab('map')">{{ t('Carte Interactive', 'Interactive Map') }}</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'weather'" (click)="switchTab('weather')">{{ t('Meteo', 'Weather') }}</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'info'" (click)="switchTab('info')">{{ t('Info Logiciel', 'Software Info') }}</button>
+    </li>
+  </ul>
+
+  <div [style.display]="activeTab === 'map' ? 'block' : 'none'">
+    <div class="card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">{{ t('Carte des ressources energetiques - Cameroun', 'Energy resources map - Cameroon') }}</h5>
+        <button class="btn btn-sm btn-outline-primary" (click)="showAddCityForm = !showAddCityForm">+ {{ t('Ajouter une ville', 'Add city') }}</button>
+      </div>
+
+      <div class="mb-3" *ngIf="showAddCityForm">
+        <div class="card card-body bg-light">
+          <div class="row g-2">
+            <div class="col-md-3"><input class="form-control" [placeholder]="t('Nom de la ville', 'City name')" [(ngModel)]="newCityName"></div>
+            <div class="col-md-2"><input class="form-control" type="number" step="0.0001" placeholder="Latitude" [(ngModel)]="newCityLat"></div>
+            <div class="col-md-2"><input class="form-control" type="number" step="0.0001" placeholder="Longitude" [(ngModel)]="newCityLon"></div>
+            <div class="col-md-2"><input class="form-control" type="number" step="0.1" [placeholder]="t('Soleil kWh/m2/j', 'Sun kWh/m2/d')" [(ngModel)]="newCitySun"></div>
+            <div class="col-md-2"><input class="form-control" type="number" step="0.1" [placeholder]="t('Vent m/s', 'Wind m/s')" [(ngModel)]="newCityWind"></div>
+            <div class="col-md-1"><button class="btn btn-warning fw-bold w-100" (click)="addCity()">+</button></div>
+          </div>
+          <div *ngIf="addCityMessage" class="alert mt-2 mb-0" [class.alert-success]="addCityMessage.includes('✅')" [class.alert-warning]="addCityMessage.includes('⚠️')">
+            {{ addCityMessage }}
+          </div>
+        </div>
+      </div>
+
+      <div id="map" style="height: 500px; border-radius: 12px;"></div>
+
+      <div class="d-flex gap-3 mt-2 small text-muted flex-wrap">
+        <span>{{ t('Villes administratives', 'Administrative cities') }}</span>
+        <span>{{ t('Villes ajoutees', 'Added cities') }}</span>
+        <span>{{ t('Cliquez sur un marqueur pour voir la meteo', 'Click a marker to view weather') }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div [style.display]="activeTab === 'weather' ? 'block' : 'none'">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="form-label">{{ t('Choisir une ville', 'Choose a city') }}</label>
+          <select class="form-select" [(ngModel)]="selectedCity">
+            <option *ngFor="let c of cities" [ngValue]="c">{{ c.name }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="selectedCity" class="card text-white p-4 text-center" style="background: linear-gradient(135deg, #2980B9, #1A1A4E);">
+          <div class="fw-bold fs-5">{{ selectedCity.name }}</div>
+          <div style="font-size:3rem;">{{ selectedCity.icon }}</div>
+          <div style="font-size:2.5rem;font-weight:800;">{{ selectedCity.temp }}°C</div>
+          <div class="opacity-75">{{ selectedCity.desc }}</div>
+          <div class="row mt-3 g-2">
+            <div class="col-4">
+              <div class="bg-white bg-opacity-10 rounded p-2">
+                <div class="fw-bold">{{ selectedCity.humidity }}%</div>
+                <div class="small opacity-75">{{ t('Humidite', 'Humidity') }}</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="bg-white bg-opacity-10 rounded p-2">
+                <div class="fw-bold">{{ selectedCity.wind }} m/s</div>
+                <div class="small opacity-75">{{ t('Vent', 'Wind') }}</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="bg-white bg-opacity-10 rounded p-2">
+                <div class="fw-bold">{{ selectedCity.sun }}</div>
+                <div class="small opacity-75">kWh/m2/j</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card p-4 h-100" *ngIf="selectedCity">
+          <h5 class="mb-3">{{ t('Donnees energetiques de', 'Energy data for') }} {{ selectedCity.name }}</h5>
+          <div style="line-height: 2.2;">
+            <div><strong>{{ t('Ensoleillement PVGIS', 'PVGIS sunshine') }} :</strong> {{ selectedCity.sun }} kWh/m2/{{ t('jour', 'day') }}</div>
+            <div><strong>{{ t('Vitesse du vent', 'Wind speed') }} :</strong> {{ selectedCity.wind }} m/s</div>
+            <div><strong>{{ t('Temperature', 'Temperature') }} :</strong> {{ selectedCity.temp }}°C</div>
+            <div><strong>{{ t('Humidite', 'Humidity') }} :</strong> {{ selectedCity.humidity }}%</div>
+          </div>
+          <div class="alert alert-info mt-3 mb-0">
+            {{ evaluation(selectedCity).solar }}<br>
+            {{ evaluation(selectedCity).wind }}
+          </div>
+        </div>
+        <div *ngIf="!selectedCity" class="card p-4 h-100 d-flex align-items-center justify-content-center text-muted">
+          {{ t('Selectionnez une ville pour voir ses donnees.', 'Select a city to view its data.') }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div [style.display]="activeTab === 'info' ? 'block' : 'none'">
+    <div class="card p-4">
+      <div class="row">
+        <div class="col-md-6">
+          <h5 class="text-warning mb-3">{{ t('Informations generales', 'General information') }}</h5>
+          <div class="mb-2"><strong>{{ t('Nom', 'Name') }} :</strong> EnergieCam</div>
+          <div class="mb-2"><strong>{{ t('Version', 'Version') }} :</strong> 1.0.0</div>
+          <div class="mb-2"><strong>{{ t('Annee de creation', 'Creation year') }} :</strong> 2026</div>
+          <div class="mb-2"><strong>{{ t('Createur', 'Creator') }} :</strong> NJOCK YAMB CESAR ADAM</div>
+          <div class="mb-2"><strong>{{ t('Fonction', 'Role') }} :</strong> {{ t('Ingenieur Logiciel', 'Software Engineer') }}</div>
+          <div class="mb-2"><strong>{{ t('Pays', 'Country') }} :</strong> Cameroun</div>
+        </div>
+        <div class="col-md-6">
+          <h5 class="text-warning mb-3">{{ t('Fonctionnalites', 'Features') }}</h5>
+          <ul style="line-height: 2;">
+            <li>{{ t('Dimensionnement solaire (PVGIS)', 'Solar sizing (PVGIS)') }}</li>
+            <li>{{ t('Dimensionnement eolien', 'Wind sizing') }}</li>
+            <li>{{ t('Estimation des couts en FCFA', 'Cost estimation in FCFA') }}</li>
+            <li>{{ t('Carte interactive du Cameroun', 'Interactive map of Cameroon') }}</li>
+            <li>{{ t('Meteo en temps reel', 'Real-time weather') }}</li>
+            <li>{{ t('Rapports PDF professionnels', 'Professional PDF reports') }}</li>
+          </ul>
+        </div>
+      </div>
+      <div class="alert alert-warning mt-3 mb-0">
+        <strong>{{ t('Mission', 'Mission') }} :</strong>
+        {{ t('Faciliter acces aux solutions energetiques renouvelables au Cameroun grace a un outil numerique intelligent.', 'Make renewable energy solutions in Cameroon easier to access through an intelligent digital tool.') }}
+      </div>
+    </div>
+  </div>
+
+</div>

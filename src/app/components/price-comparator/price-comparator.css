@@ -1,0 +1,173 @@
+.comparator-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h2 {
+  font-size: 1.8rem;
+  color: #f59e0b;
+  margin-bottom: 0.3rem;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+/* Filtres */
+.filters {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.filter-group select {
+  padding: 0.6rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  min-width: 220px;
+  background: white;
+}
+
+.btn-compare {
+  padding: 0.6rem 1.5rem;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-compare:hover {
+  background: #d97706;
+}
+
+.btn-compare:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* Meilleur prix */
+.best-price h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+  color: #374151;
+}
+
+.best-card {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.best-card .price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #d97706;
+}
+
+.best-card .product-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.3rem 0;
+}
+
+.best-card .brand,
+.best-card .supplier,
+.best-card .phone {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.2rem;
+}
+
+/* Tous les prix */
+.all-prices h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+  color: #374151;
+}
+
+.price-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 0.8rem;
+  transition: box-shadow 0.2s;
+}
+
+.price-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.rank {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f59e0b;
+  min-width: 40px;
+}
+
+.info {
+  flex: 1;
+}
+
+.info .product-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.info .brand,
+.info .specs,
+.info .supplier,
+.info .phone {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.2rem;
+}
+
+.price-tag {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #059669;
+  text-align: right;
+  min-width: 130px;
+}
+
+.price-tag span {
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+/* Aucun résultat */
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 10px;
+}

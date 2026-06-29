@@ -1,0 +1,46 @@
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="card shadow p-4" style="width: 100%; max-width: 420px;">
+    <div class="text-center mb-4">
+      <h1 class="fw-bold" style="color:#F5A623;">☀️ EnergieCam</h1>
+      <p class="text-muted">{{ t('Créer un compte', 'Create an account') }}</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+    </div>
+    <div *ngIf="successMessage" class="alert alert-success" role="alert">
+      {{ successMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label class="form-label">{{ t('Nom complet', 'Full name') }}</label>
+        <input type="text" class="form-control" [(ngModel)]="name" name="name" required [placeholder]="t('Jean Dupont', 'John Doe')">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ t('Email', 'Email') }}</label>
+        <input type="email" class="form-control" [(ngModel)]="email" name="email" required placeholder="votre@email.com">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ t('Mot de passe', 'Password') }}</label>
+        <input type="password" class="form-control" [(ngModel)]="password" name="password" required [placeholder]="t('Minimum 6 caractères', 'Minimum 6 characters')">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ t('Vous êtes', 'You are') }}</label>
+        <select class="form-select" [(ngModel)]="role" name="role">
+          <option value="particulier">{{ t('Particulier', 'Individual') }}</option>
+          <option value="technicien">{{ t('Technicien', 'Technician') }}</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-warning w-100 fw-bold" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ t('Créer mon compte', 'Create my account') }}
+      </button>
+    </form>
+
+    <div class="text-center mt-3">
+      <span class="text-muted">{{ t('Déjà un compte ?', 'Already have an account?') }}</span>
+      <a routerLink="/login" class="ms-1">{{ t('Se connecter', 'Login') }}</a>
+    </div>
+  </div>
+</div>
