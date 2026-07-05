@@ -1,48 +1,124 @@
 <div class="container py-4">
 
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold">{{ t('Dimensionnement Eolien', 'Wind Sizing') }}</h1>
-    <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+    <h1 class="fw-bold">💨 {{ t('Calculateur Éolien', 'Wind Calculator') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">← {{ t('Retour', 'Back') }}</a>
   </div>
 
-  <div class="card p-4 mb-3" *ngIf="!results">
+  <div class="card p-4 mb-4">
+    <h4 class="mb-3">📍 {{ t('Localisation & Paramètres', 'Location & Parameters') }}</h4>
     <div class="row">
+      <div class="col-md-6">
+
+        <div class="mb-3">
+          <label class="form-label">{{ t('Région', 'Region') }}</label>
+          <select class="form-select" [(ngModel)]="selectedRegionName" (ngModelChange)="onRegionGroupChange()">
+            <option [ngValue]="null">{{ t('-- Choisir une région --', '-- Choose a region --') }}</option>
+            <option *ngFor="let g of regionGroups" [ngValue]="g.name">{{ g.name }}</option>
+          </select>
+        </div>
+
+        <div class="mb-3" *ngIf="selectedRegionName">
+          <label class="form-label">{{ t('Ville', 'City') }}</label>
+          <div class="d-flex gap-2">
+            <select class="form-select" [(ngModel)]="selectedRegion" (ngModelChange)="onRegionChange()" [compareWith]="regionCompare">
+              <option [ngValue]="null">{{ t('-- Choisir une ville --', '-- Choose a city --') }}</option>
+              <option *ngFor="let r of filteredRegions" [ngValue]="r">{{ r.name }}{{ r.isCustom ? ' ⭐' : '' }}</option>
+            </select>
+            <button *ngIf="selectedRegion?.isCustom" class="btn btn-outline-danger" type="button"
+                    [title]="t('Supprimer cette ville', 'Delete this city')"
+                    (click)="deleteCustomCity(selectedRegion!)">
+              🗑️
+            </button>
+          </div>
+          <small class="text-muted" *ngIf="selectedRegion?.isCustom">⭐ {{ t('Ville personnalisée', 'Custom city') }}</small>
+        </div>
+
+        <!-- Ajout ville personnalisée -->
+        <div class="mb-3">
+          <button class="btn btn-sm btn-outline-warning" (click)="showAddCityForm = !showAddCityForm">
+            📍 {{ t('Ma ville ne figure pas dans la liste', 'My city is not in the list') }}
+          </button>
+        </div>
+
+        <div *ngIf="showAddCityForm" class="card card-body bg-light mb-3">
+          <div class="fw-bold mb-2">{{ t('Ajouter une ville camerounaise', 'Add a Cameroonian city') }}</div>
+
+          <div class="mb-2">
+            <label class="form-label small mb-1">{{ t('Nom de la ville', 'City name') }} *</label>
+            <input class="form-control" [placeholder]="t('Nom de la ville', 'City name')" [(ngModel)]="newCityName">
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small mb-1">{{ t('Région', 'Region') }} *</label>
+            <select class="form-select" [(ngModel)]="newCityRegion" required>
+              <option [ngValue]="null" disabled>{{ t('-- Choisir une région --', '-- Choose a region --') }}</option>
+              <option *ngFor="let g of regionGroups" [ngValue]="g.name">{{ g.name }}</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small mb-1">Latitude *</label>
+              <input type="number" step="0.0001" class="form-control" placeholder="Latitude" [(ngModel)]="newCityLat">
+            </div>
+            <div class="col-6">
+              <label class="form-label small mb-1">Longitude *</label>
+              <input type="number" step="0.0001" class="form-control" placeholder="Longitude" [(ngModel)]="newCityLon">
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small mb-1">{{ t('Vitesse du vent (optionnel)', 'Wind speed (optional)') }}</label>
+            <input type="number" step="0.1" class="form-control" [placeholder]="t('Laissez vide pour moyenne régionale', 'Leave empty for regional average')" [(ngModel)]="newCityWind">
+          </div>
+
+          <small class="text-muted mb-2">{{ t('Trouvez les coordonnées sur maps.google.com', 'Find coordinates on maps.google.com (right click → "What\'s here")') }}</small>
+          <button class="btn btn-warning btn-sm mt-1"
+                  (click)="addCustomCity()"
+                  [disabled]="!newCityName || !newCityRegion || newCityLat === null || newCityLon === null">
+            {{ t('Ajouter cette ville', 'Add this city') }}
+          </button>
+          <div *ngIf="addCityMessage" class="alert mt-2 mb-0 py-2"
+               [class.alert-warning]="addCityStatus === 'missing'"
+               [class.alert-success]="addCityStatus === 'added'">
+            {{ addCityMessage }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ t('Vitesse du vent (m/s)', 'Wind speed (m/s)') }}</label>
+          <input type="number" step="0.1" class="form-control" [(ngModel)]="windSpeed">
+        </div>
+      </div>
+
       <div class="col-md-6">
         <div class="mb-3">
           <label class="form-label">{{ t('Puissance requise (W)', 'Required power (W)') }}</label>
-          <input type="number" class="form-control" [(ngModel)]="requiredPower">
+          <input type="number" class="form-control" [(ngModel)]="requiredPower" [placeholder]="t('Ex: 2000', 'E.g. 2000')">
         </div>
         <div class="mb-3">
-          <label class="form-label">{{ t('Region', 'Region') }}</label>
-          <select class="form-select" [(ngModel)]="selectedRegion" (ngModelChange)="onRegionChange()" [compareWith]="regionCompare">
-            <option [ngValue]="null">{{ t('-- Choisir une region --', '-- Choose a region --') }}</option>
-            <option *ngFor="let r of regions" [ngValue]="r">{{ r.name }} - {{ r.wind }} m/s</option>
-          </select>
+          <label class="form-label">{{ t('Rendement de la turbine (%)', 'Turbine efficiency (%)') }}</label>
+          <input type="number" class="form-control" [(ngModel)]="efficiency" [placeholder]="t('Ex: 35', 'E.g. 35')">
         </div>
         <div class="mb-3">
-          <label class="form-label">{{ t('Vitesse moyenne du vent (m/s)', 'Average wind speed (m/s)') }}</label>
-          <input type="number" step="0.1" class="form-control" [(ngModel)]="windSpeed">
-          <small class="text-muted">{{ t('Moyenne Cameroun : 2 a 5 m/s selon region', 'Cameroon average: 2 to 5 m/s depending on region') }}</small>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label class="form-label">{{ t('Efficacite turbine (%)', 'Turbine efficiency (%)') }}</label>
-          <input type="number" class="form-control" [(ngModel)]="efficiency">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">{{ t('Densite de air (kg/m3)', 'Air density (kg/m3)') }}</label>
-          <input type="number" step="0.01" class="form-control" [(ngModel)]="airDensity">
-        </div>
-        <div class="alert alert-info mt-4">
-          {{ t('La puissance eolienne suit la loi', 'Wind power follows') }} <strong>P = 1/2 x rho x A x v3 x Cp</strong>.
-          {{ t('Le coefficient de Betz limite le rendement maximal theorique a 59%.', 'The Betz coefficient limits the theoretical maximum efficiency to 59%.') }}
+          <label class="form-label">{{ t('Densité de l\'air (kg/m³)', 'Air density (kg/m³)') }}</label>
+          <input type="number" step="0.001" class="form-control" [(ngModel)]="airDensity" [placeholder]="t('Ex: 1.225', 'E.g. 1.225')">
         </div>
       </div>
     </div>
-    <button class="btn btn-primary fw-bold" (click)="calculateWind()">{{ t('Calculer', 'Calculate') }}</button>
+
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-warning fw-bold" (click)="calculateWind()" [disabled]="!isFormValid()">
+        💨 {{ t('Calculer', 'Calculate') }}
+      </button>
+      <small *ngIf="!isFormValid()" class="text-danger">
+        {{ t('Veuillez remplir : ville, puissance requise, vitesse du vent, rendement et densité de l\'air.', 'Please fill: city, required power, wind speed, efficiency and air density.') }}
+      </small>
+    </div>
   </div>
 
+  <!-- RÉSULTATS -->
   <div *ngIf="results">
 
     <div *ngIf="saveMessage" class="alert alert-success">{{ saveMessage }}</div>
@@ -51,58 +127,59 @@
     </div>
 
     <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e3f2fd, #e8f5e9);">
-      <h4 class="mb-3">{{ t('Resultats Dimensionnement Eolien', 'Wind Sizing Results') }} - {{ results.region }}</h4>
+      <h4 class="mb-3">✅ {{ t('Résultats du Dimensionnement Éolien', 'Wind Sizing Results') }} – {{ results.region }}</h4>
       <div class="row text-center g-3">
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
-            <div class="fs-4 fw-bold text-primary">{{ results.A }}</div>
-            <div class="small text-muted">m2 {{ t('surface balayee', 'swept area') }}</div>
+            <div class="fs-3 fw-bold text-primary">{{ results.D }}</div>
+            <div class="small text-muted">{{ t('Diamètre pales (m)', 'Blade diameter (m)') }}</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
-            <div class="fs-4 fw-bold text-primary">{{ results.D }}</div>
-            <div class="small text-muted">m {{ t('diametre rotor', 'rotor diameter') }}</div>
+            <div class="fs-3 fw-bold text-primary">{{ results.mast }}</div>
+            <div class="small text-muted">{{ t('Hauteur mât (m)', 'Mast height (m)') }}</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
-            <div class="fs-4 fw-bold text-primary">{{ results.mast }}</div>
-            <div class="small text-muted">m {{ t('hauteur mat', 'mast height') }}</div>
+            <div class="fs-3 fw-bold text-primary">{{ results.nTurb }}</div>
+            <div class="small text-muted">{{ t('Éoliennes nécessaires', 'Turbines needed') }}</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
-            <div class="fs-4 fw-bold text-primary">{{ results.nTurb }}</div>
-            <div class="small text-muted">{{ t('eolienne(s)', 'wind turbine(s)') }}</div>
+            <div class="fs-3 fw-bold text-primary">{{ results.rec.power }}W</div>
+            <div class="small text-muted">{{ t('Modèle recommandé', 'Recommended model') }}</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="card p-4 mb-3">
-      <h5 class="mb-3">{{ t('Options eoliennes disponibles', 'Available wind turbine options') }}</h5>
+      <h5 class="mb-3">🛒 {{ t('Options d\'éoliennes disponibles', 'Available turbine options') }}</h5>
       <div class="row g-3">
-        <div class="col-md-4" *ngFor="let turbine of results.turbineOptions">
-          <div class="border rounded p-3 h-100"
-               [class.border-primary]="turbine.recommended"
-               [class.border-2]="turbine.recommended">
-            <span *ngIf="turbine.recommended" class="badge bg-primary mb-2">{{ t('Recommande', 'Recommended') }}</span>
-            <div class="fw-bold">{{ turbine.name }}</div>
-            <div class="small text-muted">{{ turbine.brand }}</div>
-            <div class="fw-bold text-success mt-2">{{ turbine.price | number:'1.0-0' }} FCFA</div>
+        <div class="col-md-4" *ngFor="let t of results.turbineOptions">
+          <div class="border rounded p-3 h-100" [class.border-warning]="t.recommended" [class.border-2]="t.recommended">
+            <span *ngIf="t.recommended" class="badge bg-warning text-dark mb-2">⭐ {{ t('Recommandé', 'Recommended') }}</span>
+            <div class="fw-bold">{{ t.name }}</div>
+            <div class="small text-muted">🏭 {{ t.brand }}</div>
+            <div class="fw-bold text-success mt-2">{{ t.price | number:'1.0-0' }} FCFA</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="alert alert-warning fw-bold d-flex justify-content-between fs-5">
-      <span>{{ t('Cout total estime :', 'Estimated total cost:') }}</span>
-      <span class="text-success">{{ results.totalCost | number:'1.0-0' }} FCFA</span>
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">💰 {{ t('Estimation des Coûts', 'Cost Estimation') }}</h5>
+      <div class="alert alert-warning d-flex justify-content-between fw-bold fs-5">
+        <span>💰 TOTAL ({{ results.nTurb }} × {{ results.rec.name }})</span>
+        <span>{{ results.totalCost | number:'1.0-0' }} FCFA</span>
+      </div>
     </div>
 
-    <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e3f2fd, #e8f5e9);">
-      <h5 class="mb-3">{{ t('Retour sur Investissement (ROI)', 'Return on Investment (ROI)') }}</h5>
+    <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e8f5e9, #f1f8e9);">
+      <h5 class="mb-3">📈 {{ t('Retour sur Investissement (ROI)', 'Return on Investment (ROI)') }}</h5>
       <div class="row text-center g-3 mb-3">
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
@@ -113,7 +190,7 @@
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
             <div class="fs-3 fw-bold text-success">{{ results.roi.economieAnnuelle | number:'1.0-0' }}</div>
-            <div class="small text-muted">{{ t('FCFA economises/an', 'FCFA saved/year') }}</div>
+            <div class="small text-muted">{{ t('FCFA économisés/an', 'FCFA saved/year') }}</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
@@ -129,57 +206,24 @@
           </div>
         </div>
       </div>
-
-      <table class="table table-bordered">
-        <thead class="table-primary">
-          <tr>
-            <th>{{ t('Periode', 'Period') }}</th>
-            <th class="text-end">{{ t('Economies cumulees', 'Cumulative savings') }}</th>
-            <th class="text-end">{{ t('Benefice net', 'Net benefit') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{{ t('Remboursement', 'Payback') }}</td>
-            <td class="text-end">{{ results.roi.paybackYears }} {{ t('ans', 'years') }}</td>
-            <td class="text-end text-muted">-</td>
-          </tr>
-          <tr>
-            <td>{{ t('Sur 20 ans', 'Over 20 years') }}</td>
-            <td class="text-end">{{ (results.roi.economieAnnuelle * 20) | number:'1.0-0' }} FCFA</td>
-            <td class="text-end fw-bold text-success">+ {{ results.roi.benefice20ans | number:'1.0-0' }} FCFA</td>
-          </tr>
-          <tr class="table-success">
-            <td>{{ t('Sur 25 ans', 'Over 25 years') }}</td>
-            <td class="text-end">{{ (results.roi.economieAnnuelle * 25) | number:'1.0-0' }} FCFA</td>
-            <td class="text-end fw-bold text-success">+ {{ results.roi.benefice25ans | number:'1.0-0' }} FCFA</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="alert alert-info mt-2 mb-0">
-        {{ t('Base sur les tarifs SOCADEL. Consommation mensuelle estimee :', 'Based on SOCADEL rates. Estimated monthly consumption:') }}
-        <strong>{{ results.roi.consommationMensuelle | number:'1.0-0' }} kWh</strong> -
-        {{ t('Facture mensuelle economisee :', 'Monthly bill saved:') }}
-        <strong>{{ results.roi.factureMensuelle | number:'1.0-0' }} FCFA</strong>.
+      <div class="alert alert-success mb-0">
+        💡 {{ t('Votre installation se rentabilise en', 'Your installation pays back in') }} <strong>{{ results.roi.paybackYears }} {{ t('ans', 'years') }}</strong>
+        {{ t('et génère un bénéfice net de', 'and generates a net benefit of') }}
+        <strong>{{ results.roi.benefice20ans | number:'1.0-0' }} FCFA {{ t('sur 20 ans', 'over 20 years') }}</strong>.
       </div>
     </div>
 
     <div class="card p-4 mb-3">
-      <h5 class="mb-3">{{ t('Analyse Graphique', 'Graphical Analysis') }}</h5>
+      <h5 class="mb-3">📊 {{ t('Analyse Graphique', 'Graphical Analysis') }}</h5>
       <div class="row">
-        <div class="col-md-6 mb-3">
-          <canvas id="windSpeedChart" height="300"></canvas>
-        </div>
-        <div class="col-md-6 mb-3">
-          <canvas id="turbineChart" height="300"></canvas>
-        </div>
+        <div class="col-md-6 mb-3"><canvas id="windSpeedChart" height="250"></canvas></div>
+        <div class="col-md-6 mb-3"><canvas id="turbineChart" height="250"></canvas></div>
       </div>
     </div>
 
-    <div class="d-flex gap-2 mb-4 flex-wrap">
-      <button class="btn btn-outline-secondary btn-sm" (click)="reset()">{{ t('Nouveau calcul', 'New calculation') }}</button>
-      <a routerLink="/projects" class="btn btn-warning fw-bold btn-sm">{{ t('Voir mes projets', 'View my projects') }}</a>
+    <div class="d-flex gap-2 mb-4">
+      <button class="btn btn-outline-secondary" (click)="reset()">🔄 {{ t('Nouveau calcul', 'New calculation') }}</button>
+      <a routerLink="/projects" class="btn btn-warning fw-bold">📁 {{ t('Voir mes projets', 'View my projects') }}</a>
     </div>
 
   </div>

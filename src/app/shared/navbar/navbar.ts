@@ -18,6 +18,7 @@ export class Navbar implements OnInit {
   showLogoutConfirm = false;
   darkMode = false;
   showShareMenu = false;
+  showInfoModal = false;
 
   constructor(
     public auth: Auth,
@@ -94,9 +95,27 @@ export class Navbar implements OnInit {
 
   toggleNotifPanel() {
     this.showNotifPanel = !this.showNotifPanel;
+    this.showShareMenu = false;
     if (this.showNotifPanel) {
       this.loadNotifications();
     }
+  }
+
+  openNotification(n: AppNotification) {
+    n.read = true;
+    this.showNotifPanel = false;
+
+    // Persiste le statut "lu" côté serveur pour que le badge ne réapparaisse pas
+    this.notifService.markOneRead(n.id).subscribe({
+      error: () => console.log('Erreur markOneRead')
+    });
+
+    const queryParams = n.from_user_id ? { userId: n.from_user_id } : {};
+
+    // Force la navigation même si on est déjà sur /messages
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigate(['/messages'], { queryParams });
+    });
   }
 
   markAllRead() {

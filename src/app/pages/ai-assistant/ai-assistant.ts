@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { AiService } from '../../services/ai';
+import { AiService, ChatHistoryEntry } from '../../services/ai';
 import { AppTranslateService } from '../../services/translate';
 
 interface ChatMessage {
@@ -52,8 +52,8 @@ export class AiAssistant {
       {
         role: 'ai',
         content: this.t(
-          'Bonjour ! Je suis votre assistant IA spécialisé en énergies renouvelables pour le Cameroun. Posez-moi vos questions sur le solaire, l\'éolien, ou l\'interprétation de vos résultats de dimensionnement ! ☀️',
-          'Hello! I am your AI assistant specializing in renewable energy for Cameroon. Ask me your questions about solar, wind, or interpreting your sizing results! ☀️'
+          'Je suis votre assistant spécialisé en énergies renouvelables pour le Cameroun. Posez vos questions sur le solaire, l\'éolien, ou l\'interprétation de vos résultats de dimensionnement.',
+          'I am your assistant specializing in renewable energy for Cameroon. Ask your questions about solar, wind, or interpreting your sizing results.'
         ),
         time: this.currentTime()
       }
@@ -78,9 +78,20 @@ export class AiAssistant {
   }
 
   // ===== CHAT =====
+  private buildHistory(): ChatHistoryEntry[] {
+    // On exclut le tout premier message d'accueil (index 0) pour ne pas polluer l'historique envoyé à l'IA
+    return this.messages.slice(1).map(m => ({
+      role: m.role === 'user' ? 'user' as const : 'assistant' as const,
+      content: m.content
+    }));
+  }
+
   sendChat() {
     if (!this.chatInput.trim() || this.chatLoading) return;
     const userMsg = this.chatInput.trim();
+
+    const history = this.buildHistory();
+
     this.messages.push({
       role: 'user',
       content: userMsg,
@@ -89,7 +100,7 @@ export class AiAssistant {
     this.chatInput = '';
     this.chatLoading = true;
 
-    this.aiService.chat(userMsg).subscribe({
+    this.aiService.chat(userMsg, history).subscribe({
       next: (res) => {
         this.messages.push({
           role: 'ai',
@@ -105,7 +116,7 @@ export class AiAssistant {
       error: () => {
         this.messages.push({
           role: 'ai',
-          content: this.t('⚠️ Erreur de connexion à l\'IA. Vérifiez que le serveur Laravel est démarré.', '⚠️ AI connection error. Check that the Laravel server is running.'),
+          content: this.t('Erreur de connexion à l\'IA. Vérifiez que le serveur Laravel est démarré.', 'AI connection error. Check that the Laravel server is running.'),
           time: this.currentTime()
         });
         this.chatLoading = false;
@@ -131,7 +142,7 @@ export class AiAssistant {
         this.recLoading = false;
       },
       error: () => {
-        this.recResult = this.t('⚠️ Erreur de connexion à l\'IA.', '⚠️ AI connection error.');
+        this.recResult = this.t('Erreur de connexion à l\'IA.', 'AI connection error.');
         this.recLoading = false;
       }
     });
@@ -151,7 +162,7 @@ export class AiAssistant {
         this.predLoading = false;
       },
       error: () => {
-        this.predResult = this.t('⚠️ Erreur de connexion à l\'IA.', '⚠️ AI connection error.');
+        this.predResult = this.t('Erreur de connexion à l\'IA.', 'AI connection error.');
         this.predLoading = false;
       }
     });

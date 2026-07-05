@@ -8,6 +8,7 @@ import { RouterLink } from '@angular/router';
 import { PvgisService } from '../../services/pvgis';
 import { ProjectService } from '../../services/project';
 import { PdfService } from '../../services/pdf';
+import { CustomCityService, CustomCity } from '../../services/custom-city';
 import { AppTranslateService } from '../../services/translate';
 
 interface Appliance {
@@ -22,6 +23,8 @@ interface City {
   lat: number;
   lon: number;
   wind: number;
+  isCustom?: boolean;
+  customId?: number;
 }
 
 @Component({
@@ -38,49 +41,237 @@ export class Calculator implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {}
 
-  // ===== Villes du Cameroun =====
+  // ===== Données villes et régions =====
   cities: City[] = [
-    { name: 'Yaoundé (Centre)', lat: 3.848, lon: 11.502, wind: 2.5 },
-    { name: 'Douala (Littoral)', lat: 4.061, lon: 9.737, wind: 3.2 },
-    { name: 'Garoua (Nord)', lat: 9.301, lon: 13.397, wind: 4.1 },
-    { name: 'Maroua (Extrême-Nord)', lat: 10.591, lon: 14.316, wind: 4.5 },
-    { name: 'Bafoussam (Ouest)', lat: 5.478, lon: 10.417, wind: 3.0 },
-    { name: 'Bamenda (Nord-Ouest)', lat: 5.959, lon: 10.146, wind: 3.5 },
-    { name: 'Ngaoundéré (Adamaoua)', lat: 7.322, lon: 13.584, wind: 4.8 },
-    { name: 'Bertoua (Est)', lat: 4.578, lon: 13.686, wind: 2.2 },
-    { name: 'Ebolowa (Sud)', lat: 2.900, lon: 11.150, wind: 2.0 },
-    { name: 'Buea (Sud-Ouest)', lat: 4.154, lon: 9.242, wind: 3.8 },
+    // CENTRE
+    { name: 'Yaoundé', lat: 3.848, lon: 11.502, wind: 2.5 },
+    { name: 'Mbalmayo', lat: 3.517, lon: 11.500, wind: 2.1 },
+    { name: 'Obala', lat: 4.167, lon: 11.533, wind: 2.3 },
+    { name: 'Mfou', lat: 3.717, lon: 11.633, wind: 2.2 },
+    { name: 'Akonolinga', lat: 3.767, lon: 12.250, wind: 2.0 },
+    { name: 'Eséka', lat: 3.650, lon: 10.767, wind: 2.1 },
+    // LITTORAL
+    { name: 'Douala', lat: 4.061, lon: 9.737, wind: 3.2 },
+    { name: 'Edéa', lat: 3.800, lon: 10.133, wind: 2.8 },
+    { name: 'Nkongsamba', lat: 4.954, lon: 9.940, wind: 2.9 },
+    { name: 'Manjo', lat: 4.838, lon: 9.821, wind: 2.7 },
+    { name: 'Loum', lat: 4.719, lon: 9.733, wind: 2.6 },
+    // OUEST
+    { name: 'Bafoussam', lat: 5.478, lon: 10.417, wind: 3.0 },
+    { name: 'Dschang', lat: 5.450, lon: 10.050, wind: 3.3 },
+    { name: 'Mbouda', lat: 5.625, lon: 10.250, wind: 3.4 },
+    { name: 'Foumban', lat: 5.729, lon: 10.917, wind: 3.1 },
+    { name: 'Bafang', lat: 5.159, lon: 10.184, wind: 3.0 },
+    { name: 'Bandjoun', lat: 5.350, lon: 10.417, wind: 3.2 },
+    // NORD-OUEST
+    { name: 'Bamenda', lat: 5.959, lon: 10.146, wind: 3.5 },
+    { name: 'Kumbo', lat: 6.200, lon: 10.667, wind: 3.8 },
+    { name: 'Wum', lat: 6.383, lon: 10.067, wind: 3.6 },
+    { name: 'Nkambe', lat: 6.583, lon: 10.667, wind: 4.0 },
+    // SUD-OUEST
+    { name: 'Buea', lat: 4.154, lon: 9.242, wind: 3.8 },
+    { name: 'Limbe', lat: 4.022, lon: 9.205, wind: 4.2 },
+    { name: 'Kumba', lat: 4.636, lon: 9.448, wind: 2.9 },
+    { name: 'Mamfe', lat: 5.767, lon: 9.317, wind: 2.7 },
+    { name: 'Tiko', lat: 4.075, lon: 9.360, wind: 3.9 },
+    // NORD
+    { name: 'Garoua', lat: 9.301, lon: 13.397, wind: 4.1 },
+    { name: 'Guider', lat: 9.933, lon: 13.950, wind: 4.0 },
+    { name: 'Poli', lat: 8.483, lon: 13.250, wind: 3.9 },
+    { name: 'Tcholliré', lat: 8.400, lon: 14.167, wind: 4.2 },
+    { name: 'Pitoa', lat: 9.383, lon: 13.533, wind: 4.0 },
+    // EXTREME-NORD
+    { name: 'Maroua', lat: 10.591, lon: 14.316, wind: 4.5 },
+    { name: 'Kousséri', lat: 12.078, lon: 15.030, wind: 4.7 },
+    { name: 'Mokolo', lat: 10.736, lon: 13.802, wind: 4.6 },
+    { name: 'Yagoua', lat: 10.339, lon: 15.234, wind: 4.4 },
+    { name: 'Kaélé', lat: 10.107, lon: 14.448, wind: 4.3 },
+    { name: 'Mora', lat: 11.045, lon: 14.140, wind: 4.8 },
+    // ADAMAOUA
+    { name: 'Ngaoundéré', lat: 7.322, lon: 13.584, wind: 4.8 },
+    { name: 'Meiganga', lat: 6.517, lon: 14.300, wind: 4.5 },
+    { name: 'Tibati', lat: 6.467, lon: 12.633, wind: 4.0 },
+    { name: 'Tignère', lat: 7.367, lon: 12.650, wind: 4.9 },
+    // EST
+    { name: 'Bertoua', lat: 4.578, lon: 13.686, wind: 2.2 },
+    { name: 'Batouri', lat: 4.433, lon: 14.367, wind: 2.0 },
+    { name: 'Yokadouma', lat: 3.517, lon: 15.050, wind: 1.9 },
+    { name: 'Abong-Mbang', lat: 3.983, lon: 13.183, wind: 2.0 },
+    // SUD
+    { name: 'Ebolowa', lat: 2.900, lon: 11.150, wind: 2.0 },
+    { name: 'Sangmélima', lat: 2.933, lon: 11.983, wind: 1.8 },
+    { name: 'Kribi', lat: 2.938, lon: 9.910, wind: 3.6 },
+    { name: 'Ambam', lat: 2.383, lon: 11.283, wind: 1.9 },
   ];
+
+  regionGroups: { name: string; cities: string[] }[] = [
+    { name: 'Centre', cities: ['Yaoundé','Mbalmayo','Obala','Mfou','Akonolinga','Eséka'] },
+    { name: 'Littoral', cities: ['Douala','Edéa','Nkongsamba','Manjo','Loum'] },
+    { name: 'Ouest', cities: ['Bafoussam','Dschang','Mbouda','Foumban','Bafang','Bandjoun'] },
+    { name: 'Nord-Ouest', cities: ['Bamenda','Kumbo','Wum','Nkambe'] },
+    { name: 'Sud-Ouest', cities: ['Buea','Limbe','Kumba','Mamfe','Tiko'] },
+    { name: 'Nord', cities: ['Garoua','Guider','Poli','Tcholliré','Pitoa'] },
+    { name: 'Extrême-Nord', cities: ['Maroua','Kousséri','Mokolo','Yagoua','Kaélé','Mora'] },
+    { name: 'Adamaoua', cities: ['Ngaoundéré','Meiganga','Tibati','Tignère'] },
+    { name: 'Est', cities: ['Bertoua','Batouri','Yokadouma','Abong-Mbang'] },
+    { name: 'Sud', cities: ['Ebolowa','Sangmélima','Kribi','Ambam'] },
+  ];
+
+  selectedRegionName: string | null = null;
+  selectedCity: City | null = null;
+
+  get filteredCities(): City[] {
+    if (!this.selectedRegionName) return [];
+    const group = this.regionGroups.find(g => g.name === this.selectedRegionName);
+    if (!group) return [];
+    return this.cities.filter(c => group.cities.includes(c.name));
+  }
+
+  onRegionGroupChange() {
+    this.selectedCity = null;
+  }
 
   // ===== Étapes =====
   step = 1;
 
   // ===== Étape 1 : Appareils =====
   appliances: Appliance[] = [
-    { name: 'Ampoule LED', power: 10, hours: 6, qty: 4 },
-    { name: 'Téléviseur', power: 80, hours: 4, qty: 1 },
-    { name: 'Réfrigérateur', power: 150, hours: 24, qty: 1 },
+    { name: '', power: 0, hours: 0, qty: 0 }
   ];
 
   // ===== Étape 2 : Localisation & paramètres =====
-  selectedCity: City | null = null;
   sunHours: number = 5.1;
   loadingPvgis = false;
   pvgisStatus: 'official' | 'fallback' | 'error' | '' = '';
-  autonomyDays = 2;
+  autonomyDays: number | null = null;
   voltage = 24;
-  panelPower = 300;
+  panelPower: number | null = null;
 
   // ===== Résultats =====
   results: any = null;
   saving = false;
   saveStatus: 'success' | 'error' | '' = '';
 
+  // ===== Ajout ville personnalisée =====
+  showAddCityForm = false;
+  newCityName = '';
+  newCityLat: number | null = null;
+  newCityLon: number | null = null;
+  newCityRegion: string | null = null;
+  newCitySunHours: number | null = null;
+  addCityStatus: 'missing' | 'added' | 'loading' | '' = '';
+  addedCityName = '';
+
+  get addCityMessage(): string {
+    if (this.addCityStatus === 'missing')
+      return this.t('⚠️ Remplissez le nom, la région, la latitude et la longitude.', '⚠️ Fill in the name, region, latitude and longitude.');
+    if (this.addCityStatus === 'loading')
+      return this.t('⏳ Récupération des données PVGIS...', '⏳ Fetching PVGIS data...');
+    if (this.addCityStatus === 'added')
+      return this.t(`✅ Ville "${this.addedCityName}" ajoutée et sélectionnée !`, `✅ City "${this.addedCityName}" added and selected!`);
+    return '';
+  }
+
+  addCustomCity() {
+    if (!this.newCityName || !this.newCityRegion || this.newCityLat === null || this.newCityLon === null) {
+      this.addCityStatus = 'missing';
+      return;
+    }
+
+    const regionGroup = this.regionGroups.find(g => g.name === this.newCityRegion);
+    if (!regionGroup) {
+      this.addCityStatus = 'missing';
+      return;
+    }
+
+    if (regionGroup.cities.includes(this.newCityName)) {
+      this.addCityStatus = 'missing';
+      return;
+    }
+
+    this.addCityStatus = 'loading';
+    this.loadingPvgis = true;
+
+    this.pvgis.getSolarData(this.newCityLat, this.newCityLon).subscribe({
+      next: (data) => this.finalizeAddCity(regionGroup, data.sun_hours_per_day, data.source === 'PVGIS' ? 'official' : 'fallback'),
+      error: () => this.finalizeAddCity(regionGroup, this.newCitySunHours ?? 5.0, 'error')
+    });
+  }
+
+  private finalizeAddCity(regionGroup: { name: string; cities: string[] }, sunHours: number, status: 'official' | 'fallback' | 'error') {
+    const finalSunHours = (this.newCitySunHours !== null && this.newCitySunHours > 0) ? this.newCitySunHours : sunHours;
+
+    this.customCityService.create({
+      name: this.newCityName,
+      region: this.newCityRegion,
+      latitude: this.newCityLat!,
+      longitude: this.newCityLon!,
+      sun_hours: finalSunHours,
+      wind_speed: 3.0
+    }).subscribe({
+      next: (saved) => {
+        const newCity: City = {
+          name: saved.name,
+          lat: saved.latitude,
+          lon: saved.longitude,
+          wind: saved.wind_speed ?? 3.0,
+          isCustom: true,
+          customId: saved.id
+        };
+
+        this.cities.push(newCity);
+        regionGroup.cities.push(newCity.name);
+
+        this.selectedRegionName = this.newCityRegion;
+        this.selectedCity = newCity;
+        this.addedCityName = newCity.name;
+        this.sunHours = finalSunHours;
+        this.pvgisStatus = status;
+        this.loadingPvgis = false;
+        this.addCityStatus = 'added';
+
+        this.newCityName = '';
+        this.newCityRegion = null;
+        this.newCityLat = null;
+        this.newCityLon = null;
+        this.newCitySunHours = null;
+        this.showAddCityForm = false;
+      },
+      error: () => {
+        this.loadingPvgis = false;
+        this.addCityStatus = 'missing';
+        alert(this.t('Erreur lors de l\'enregistrement de la ville.', 'Error saving the city.'));
+      }
+    });
+  }
+
+  deleteCustomCity(city: City) {
+    if (!city.isCustom || !city.customId) return;
+
+    if (!confirm(this.t(`Supprimer définitivement la ville "${city.name}" ? Elle sera retirée de tous les modules.`, `Permanently delete "${city.name}"? It will be removed from all modules.`))) {
+      return;
+    }
+
+    this.customCityService.delete(city.customId).subscribe({
+      next: () => {
+        this.cities = this.cities.filter(c => c.customId !== city.customId);
+        this.regionGroups.forEach(g => {
+          g.cities = g.cities.filter(name => name !== city.name);
+        });
+        if (this.selectedCity?.customId === city.customId) {
+          this.selectedCity = null;
+        }
+      },
+      error: () => alert(this.t('Erreur lors de la suppression.', 'Error deleting the city.'))
+    });
+  }
+
   constructor(
     private pvgis: PvgisService,
     private projectService: ProjectService,
     private route: ActivatedRoute,
     private pdfService: PdfService,
+    private customCityService: CustomCityService,
     public translateService: AppTranslateService
   ) {
     effect(() => {
@@ -119,15 +310,17 @@ export class Calculator implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.loadCustomCities();
+
     this.route.queryParams.subscribe(params => {
       if (params['load']) {
         const saved = ProjectService.selectedProject;
         if (saved && saved.type === 'solaire') {
           this.appliances = saved.input_data.appliances || this.appliances;
           this.sunHours = saved.input_data.sunHours || this.sunHours;
-          this.autonomyDays = saved.input_data.autonomyDays || this.autonomyDays;
+          this.autonomyDays = saved.input_data.autonomyDays || null;
           this.voltage = saved.input_data.voltage || this.voltage;
-          this.panelPower = saved.input_data.panelPower || this.panelPower;
+          this.panelPower = saved.input_data.panelPower || null;
           this.results = saved.result_data;
           this.step = 3;
           setTimeout(() => this.renderCharts(), 500);
@@ -136,9 +329,86 @@ export class Calculator implements OnInit, AfterViewInit {
     });
   }
 
+  loadCustomCities() {
+    this.customCityService.getAll().subscribe({
+      next: (list) => {
+        list.forEach(c => {
+          if (this.cities.some(existing => existing.name === c.name)) return;
+
+          const city: City = {
+            name: c.name,
+            lat: c.latitude,
+            lon: c.longitude,
+            wind: c.wind_speed ?? 3.0,
+            isCustom: true,
+            customId: c.id
+          };
+          this.cities.push(city);
+
+          const group = this.regionGroups.find(g => g.name === c.region);
+          if (group && !group.cities.includes(c.name)) {
+            group.cities.push(c.name);
+          }
+        });
+      }
+    });
+  }
+
+  // ===================================================
+  // VALIDATIONS
+  // ===================================================
+
+  isConsumptionValid(): boolean {
+    return this.appliances.some(app =>
+      app.name && app.name.trim() !== '' &&
+      app.power > 0 &&
+      app.hours > 0 &&
+      app.qty > 0
+    );
+  }
+
+  isLocationValid(): boolean {
+    return this.selectedRegionName !== null &&
+           this.selectedCity !== null &&
+           this.sunHours > 0 &&
+           this.autonomyDays !== null &&
+           this.autonomyDays > 0 &&
+           this.panelPower !== null &&
+           this.panelPower > 0 &&
+           this.voltage !== null;
+  }
+
+  // ===================================================
+  // TRANSITIONS ENTRE ONGLETS
+  // ===================================================
+
+  goToStep(n: number) {
+    if (n > this.step) {
+      if (this.step === 1 && n === 2) {
+        if (!this.isConsumptionValid()) {
+          alert(this.t(
+            'Veuillez remplir au moins un appareil avec tous les champs valides (nom, puissance > 0, heures > 0, quantité > 0).',
+            'Please fill at least one appliance with valid fields (name, power > 0, hours > 0, quantity > 0).'
+          ));
+          return;
+        }
+      }
+      if (this.step === 2 && n === 3) {
+        if (!this.isLocationValid()) {
+          alert(this.t(
+            'Veuillez remplir tous les champs de localisation et paramètres (région, ville, ensoleillement, jours d\'autonomie, tension, puissance panneau).',
+            'Please fill all location and parameters fields (region, city, sunshine, autonomy days, voltage, panel power).'
+          ));
+          return;
+        }
+      }
+    }
+    this.step = n;
+  }
+
   // ===== Gestion appareils =====
   addAppliance() {
-    this.appliances.push({ name: 'Nouvel appareil', power: 50, hours: 4, qty: 1 });
+    this.appliances.push({ name: '', power: 0, hours: 0, qty: 0 });
   }
 
   removeAppliance(index: number) {
@@ -147,11 +417,6 @@ export class Calculator implements OnInit, AfterViewInit {
 
   get totalConsumption(): number {
     return this.appliances.reduce((sum, a) => sum + (a.power * a.hours * a.qty), 0);
-  }
-
-  // ===== Navigation =====
-  goToStep(n: number) {
-    this.step = n;
   }
 
   // ===== Sélection ville =====
@@ -173,21 +438,25 @@ export class Calculator implements OnInit, AfterViewInit {
 
   // ===== CALCUL SOLAIRE =====
   calculateSolar() {
-    const total = this.totalConsumption; // Wh/jour
+    if (!this.isLocationValid()) {
+      alert(this.t('Veuillez remplir tous les champs avant de calculer.', 'Please fill all fields before calculating.'));
+      return;
+    }
+
+    const total = this.totalConsumption;
     const lossFactor = 1.25;
     const DOD = 0.8;
 
     const dailyNeeded = total * lossFactor;
-    const peakPower = dailyNeeded / this.sunHours; // Wc nécessaires
-    const nPanels = Math.ceil(peakPower / this.panelPower);
-    const actualPower = nPanels * this.panelPower;
+    const peakPower = dailyNeeded / this.sunHours;
+    const nPanels = Math.ceil(peakPower / this.panelPower!);
+    const actualPower = nPanels * this.panelPower!;
 
-    const battCapAh = (total * this.autonomyDays) / (DOD * this.voltage);
+    const battCapAh = (total * this.autonomyDays!) / (DOD * this.voltage);
     const regCurrent = Math.ceil((actualPower / this.voltage) * 1.25);
     const maxLoad = total / 4;
     const inverterKva = Math.max(1, Math.ceil((maxLoad / 1000 * 1.3) * 10) / 10);
 
-    // Types de panneaux
     const panelTypes = [
       { name: 'Panneau Monocristallin 300Wc', brand: 'JA Solar / Longi', price: 85000, eff: '21%', warranty: '25 ans', power: 300 },
       { name: 'Panneau Polycristallin 300Wc', brand: 'Yingli / Trina', price: 68000, eff: '18%', warranty: '25 ans', power: 300 },
@@ -215,7 +484,6 @@ export class Calculator implements OnInit, AfterViewInit {
     const costInstall = (costPanels + costBatt + costReg + costInv) * 0.15;
     const costTotal = costPanels + costBatt + costReg + costInv + costInstall;
 
-    // Options (6 types avec quantité nécessaire calculée pour chaque)
     const panelOptions = panelTypes.map((p, i) => ({
       ...p,
       qtyNeeded: Math.ceil(peakPower / p.power),
@@ -227,132 +495,126 @@ export class Calculator implements OnInit, AfterViewInit {
       recommended: i === 0
     }));
 
-    // ===== CALCUL ROI =====
-// Tarifs SOCADEL par tranches
-const productionAnnuelle = (actualPower * this.sunHours * 365) / 1000; // kWh/an
-const consommationMensuelle = productionAnnuelle / 12;
+    const productionAnnuelle = (actualPower * this.sunHours * 365) / 1000;
+    const consommationMensuelle = productionAnnuelle / 12;
 
-const calculerFactureSocdel = (kwh: number): number => {
-  if (kwh <= 110) return kwh * 50;
-  if (kwh <= 400) return (110 * 50) + ((kwh - 110) * 79);
-  return (110 * 50) + (290 * 79) + ((kwh - 400) * 96); // 96 = moyenne 94-99
-};
+    const calculerFactureSocdel = (kwh: number): number => {
+      if (kwh <= 110) return kwh * 50;
+      if (kwh <= 400) return (110 * 50) + ((kwh - 110) * 79);
+      return (110 * 50) + (290 * 79) + ((kwh - 400) * 96);
+    };
 
-const factureMensuelleAvant = calculerFactureSocdel(consommationMensuelle);
-const economieAnnuelle = Math.round(factureMensuelleAvant * 12);
-const tarifKwh = Math.round(economieAnnuelle / productionAnnuelle); // tarif moyen
-const coutTotal = Math.round(costPanels + costBatt + costReg + costInv + costInstall);
-const paybackYears = Math.round((coutTotal / economieAnnuelle) * 10) / 10;
-const benefice20ans = Math.round((economieAnnuelle * 20) - coutTotal);
-const benefice25ans = Math.round((economieAnnuelle * 25) - coutTotal);
-const roi20ans = Math.round(((benefice20ans / coutTotal) * 100));
+    const factureMensuelleAvant = calculerFactureSocdel(consommationMensuelle);
+    const economieAnnuelle = Math.round(factureMensuelleAvant * 12);
+    const coutTotal = Math.round(costPanels + costBatt + costReg + costInv + costInstall);
+    const paybackYears = Math.round((coutTotal / economieAnnuelle) * 10) / 10;
+    const benefice20ans = Math.round((economieAnnuelle * 20) - coutTotal);
+    const benefice25ans = Math.round((economieAnnuelle * 25) - coutTotal);
+    const roi20ans = Math.round(((benefice20ans / coutTotal) * 100));
 
-this.results = {
-  total,
-  nPanels,
-  actualPower,
-  panelPower: this.panelPower,
-  battCapAh: Math.round(battCapAh),
-  nBatt,
-  regCurrent,
-  inverterKva,
-  sunHours: this.sunHours,
-  autonomyDays: this.autonomyDays,
-  voltage: this.voltage,
-  city: this.selectedCity?.name || this.t('Non spécifiée', 'Not specified'),
-  lat: this.selectedCity?.lat,
-  lon: this.selectedCity?.lon,
-  costPanels, costBatt, costReg, costInv,
-  costInstall: Math.round(costInstall),
-  costTotal: Math.round(costTotal),
-  panelOptions,
-  battOptions,
-  // ROI
-  roi: {
-    productionAnnuelle: Math.round(productionAnnuelle),
-    economieAnnuelle,
-    paybackYears,
-    benefice20ans,
-    benefice25ans,
-    roi20ans,
-    tarifKwh,
-    consommationMensuelle: Math.round(consommationMensuelle),
-    factureMensuelle: Math.round(factureMensuelleAvant),
-  }
-};
-   
+    this.results = {
+      total,
+      nPanels,
+      actualPower,
+      panelPower: this.panelPower,
+      battCapAh: Math.round(battCapAh),
+      nBatt,
+      regCurrent,
+      inverterKva,
+      sunHours: this.sunHours,
+      autonomyDays: this.autonomyDays,
+      voltage: this.voltage,
+      city: this.selectedCity?.name || this.t('Non spécifiée', 'Not specified'),
+      lat: this.selectedCity?.lat,
+      lon: this.selectedCity?.lon,
+      costPanels, costBatt, costReg, costInv,
+      costInstall: Math.round(costInstall),
+      costTotal: Math.round(costTotal),
+      panelOptions,
+      battOptions,
+      roi: {
+        productionAnnuelle: Math.round(productionAnnuelle),
+        economieAnnuelle,
+        paybackYears,
+        benefice20ans,
+        benefice25ans,
+        roi20ans,
+        tarifKwh: Math.round(economieAnnuelle / productionAnnuelle),
+        consommationMensuelle: Math.round(consommationMensuelle),
+        factureMensuelle: Math.round(factureMensuelleAvant),
+      }
+    };
+
     this.step = 3;
     this.saveProject();
     setTimeout(() => this.renderCharts(), 500);
-  
-    const prodCtx = document.getElementById('prodChart') as HTMLCanvasElement;
-    if (prodCtx) {
-      const months = this.chartMonths();
-      // Variation saisonnière approximative de l'ensoleillement au Cameroun
-      const seasonalFactors = [1.02, 1.08, 1.14, 1.10, 0.98, 0.94, 1.00, 1.04, 1.02, 0.98, 0.96, 1.00];
-      const dailyProd = this.results.actualPower * this.results.sunHours / 1000; // kWh/jour de base
+  }
 
-      const monthlyProd = seasonalFactors.map(f => Math.round(dailyProd * f * 30));
+  // ===== Sauvegarde automatique =====
+  saveProject() {
+    if (!this.results) return;
+    this.saving = true;
+    const project = {
+      type: 'solaire' as const,
+      name: `☀️ Projet Solaire – ${this.results.city}`,
+      city: this.results.city,
+      latitude: this.results.lat,
+      longitude: this.results.lon,
+      input_data: {
+        appliances: this.appliances,
+        sunHours: this.sunHours,
+        autonomyDays: this.autonomyDays,
+        voltage: this.voltage,
+        panelPower: this.panelPower,
+      },
+      result_data: this.results,
+      total_cost: this.results.costTotal,
+    };
 
-      this.prodChart = new Chart(prodCtx, {
-        type: 'bar',
-        data: {
-          labels: months,
-          datasets: [{
-            label: this.t('Production mensuelle estimée (kWh)', 'Estimated monthly production (kWh)'),
-            data: monthlyProd,
-            backgroundColor: 'rgba(245, 166, 35, 0.7)',
-            borderColor: '#F5A623',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: { display: true, text: this.t('Production Solaire Mensuelle Estimée', 'Estimated Monthly Solar Production') },
-            legend: { display: false }
-          },
-          scales: {
-            y: { title: { display: true, text: this.t('kWh/mois', 'kWh/month') } }
-          }
-        }
-      });
+    this.projectService.create(project).subscribe({
+      next: () => {
+        this.saving = false;
+        this.saveStatus = 'success';
+      },
+      error: () => {
+        this.saving = false;
+        this.saveStatus = 'error';
+      }
+    });
+  }
+
+  resetCalculator() {
+    this.step = 1;
+    this.results = null;
+    this.saveStatus = '';
+  }
+
+  cityCompare(c1: City | null, c2: City | null): boolean {
+    return c1 && c2 ? c1.name === c2.name : c1 === c2;
+  }
+
+  async exportWithCharts() {
+    const el = document.getElementById('solarResultsSection');
+    if (!el) {
+      alert(this.t('Élément non trouvé ! Vérifiez que vous êtes bien à l\'étape 3.', 'Element not found! Make sure you are on step 3.'));
+      return;
     }
-    
-    const consoCtx = document.getElementById('consoChart') as HTMLCanvasElement;
-    if (consoCtx) {
-      
-      this.consoChart?.destroy();
-      this.consoChart = new Chart(consoCtx, {
-        type: 'bar',
-        data: {
-          labels: this.appliances.map(a => a.name),
-          datasets: [{
-            label: this.t('Consommation journalière (Wh/jour)', 'Daily consumption (Wh/day)'),
-            data: this.appliances.map(a => a.power * a.hours * a.qty),
-            backgroundColor: [
-              '#F5A623', '#27AE60', '#2980B9', '#9B59B6',
-              '#E74C3C', '#1ABC9C', '#F39C12', '#8E44AD'
-            ],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: { display: true, text: this.t('Consommation par appareil (Wh/jour)', 'Consumption by appliance (Wh/day)') },
-            legend: { display: false }
-          },
-          scales: {
-            y: { title: { display: true, text: this.t('Wh/jour', 'Wh/day') } }
-          }
-        }
-      });
+    alert(this.t('Génération du PDF en cours... Veuillez patienter.', 'Generating PDF... Please wait.'));
+    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      await this.pdfService.exportToPDF('solarResultsSection', 'rapport-solaire-energiecam.pdf');
+    } catch(e) {
+      alert(this.t('Erreur PDF : ', 'PDF error: ') + e);
     }
   }
-  
-    
-   renderCharts() {
+
+  private chartMonths(): string[] {
+    return this.translateService.getCurrentLang() === 'fr'
+      ? ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+      : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  }
+
+  renderCharts() {
     if (!this.results) return;
 
     this.costChart?.destroy();
@@ -367,7 +629,7 @@ this.results = {
       this.consoChart = new Chart(consoCtx, {
         type: 'bar',
         data: {
-          labels: this.appliances.map(a => a.name),
+          labels: this.appliances.map(a => a.name || 'Appareil'),
           datasets: [{
             label: this.t('Consommation journalière (Wh/jour)', 'Daily consumption (Wh/day)'),
             data: this.appliances.map(a => a.power * a.hours * a.qty),
@@ -446,69 +708,5 @@ this.results = {
         }
       });
     }
-  }
-
-  // ===== Sauvegarde automatique =====
-  saveProject() {
-    if (!this.results) return;
-    this.saving = true;
-    const project = {
-      type: 'solaire' as const,
-      name: `☀️ Projet Solaire – ${this.results.city}`,
-      city: this.results.city,
-      latitude: this.results.lat,
-      longitude: this.results.lon,
-      input_data: {
-        appliances: this.appliances,
-        sunHours: this.sunHours,
-        autonomyDays: this.autonomyDays,
-        voltage: this.voltage,
-        panelPower: this.panelPower,
-      },
-      result_data: this.results,
-      total_cost: this.results.costTotal,
-    };
-
-    this.projectService.create(project).subscribe({
-      next: () => {
-        this.saving = false;
-        this.saveStatus = 'success';
-      },
-      error: () => {
-        this.saving = false;
-        this.saveStatus = 'error';
-      }
-    });
-  }
-
-  resetCalculator() {
-    this.step = 1;
-    this.results = null;
-    this.saveStatus = '';
-  }
-  cityCompare(c1: City | null, c2: City | null): boolean {
-    return c1 && c2 ? c1.name === c2.name : c1 === c2;
-  }
- 
-  async exportWithCharts() {
-    const el = document.getElementById('solarResultsSection');
-    console.log('Element trouvé:', el);
-    if (!el) {
-      alert(this.t('Élément non trouvé ! Vérifiez que vous êtes bien à l\'étape 3.', 'Element not found! Make sure you are on step 3.'));
-      return;
-    }
-    alert(this.t('Génération du PDF en cours... Veuillez patienter.', 'Generating PDF... Please wait.'));
-    await new Promise(resolve => setTimeout(resolve, 500));
-    try {
-      await this.pdfService.exportToPDF('solarResultsSection', 'rapport-solaire-energiecam.pdf');
-    } catch(e) {
-      alert(this.t('Erreur PDF : ', 'PDF error: ') + e);
-    }
-  }
-
-  private chartMonths(): string[] {
-    return this.translateService.getCurrentLang() === 'fr'
-      ? ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
-      : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   }
 }

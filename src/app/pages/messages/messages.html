@@ -1,79 +1,109 @@
 <div class="container py-4">
 
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold">{{ t('Messagerie', 'Messaging') }}</h1>
-    <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+    <h1 class="fw-bold">💬 {{ t('Messagerie', 'Messaging') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">← {{ t('Retour', 'Back') }}</a>
   </div>
 
   <ul class="nav nav-pills mb-3">
     <li class="nav-item">
-      <button class="nav-link" [class.active]="activeTab === 'inbox'" (click)="switchTab('inbox')">{{ t('Boite de reception', 'Inbox') }}</button>
+      <button class="nav-link" [class.active]="activeTab === 'inbox'" (click)="switchTab('inbox')">
+        📥 {{ t('Boite de reception', 'Inbox') }}
+      </button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" [class.active]="activeTab === 'forum'" (click)="switchTab('forum')">{{ t('Forum', 'Forum') }}</button>
+      <button class="nav-link" [class.active]="activeTab === 'forum'" (click)="switchTab('forum')">
+        🗣️ {{ t('Forum', 'Forum') }}
+      </button>
     </li>
   </ul>
 
-  <div *ngIf="activeTab === 'inbox'" class="card" style="height: 500px;">
-    <div class="row g-0 h-100">
-      <div class="col-3 border-end overflow-auto">
-        <div class="p-2 fw-bold small text-muted border-bottom">{{ t('Conversations', 'Conversations') }}</div>
+  <!-- ===== ONGLET INBOX (messagerie privée) ===== -->
+  <div *ngIf="activeTab === 'inbox'" class="card p-0 overflow-hidden">
+    <div class="row g-0" style="min-height: 500px;">
+
+      <!-- Liste des contacts -->
+      <div class="col-md-4 border-end" style="max-height: 600px; overflow-y: auto;">
+        <div class="p-3 border-bottom bg-light">
+          <strong class="small">{{ t('Contacts', 'Contacts') }}</strong>
+        </div>
         <div *ngFor="let u of chatUsers"
-             class="p-2 cursor-pointer"
+             class="p-3 border-bottom d-flex align-items-center gap-2"
+             style="cursor: pointer;"
              [class.bg-light]="selectedUser?.id === u.id"
-             style="cursor:pointer;"
              (click)="selectUser(u)">
-          <span [class]="u.online ? 'text-success' : 'text-muted'">●</span>
-          {{ u.role === 'admin' ? '[Admin] ' : '' }}{{ u.name }}
+          <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:#F5A623;color:#1A1A2E;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">
+            {{ u.name?.charAt(0)?.toUpperCase() }}
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-bold small">{{ u.name }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ u.role }}</div>
+          </div>
+          <span *ngIf="u.online" class="badge bg-success rounded-pill" style="font-size: 0.6rem;">●</span>
+        </div>
+        <div *ngIf="chatUsers.length === 0" class="p-3 text-center text-muted small">
+          {{ t('Aucun contact disponible.', 'No contacts available.') }}
         </div>
       </div>
-      <div class="col-9 d-flex flex-column">
-        <div class="p-2 border-bottom fw-bold">
-          {{ selectedUser ? (selectedUser.role === 'admin' ? '[Admin] ' : '') + selectedUser.name : t('Selectionnez une conversation', 'Select a conversation') }}
+
+      <!-- Zone de conversation -->
+      <div class="col-md-8 d-flex flex-column">
+        <div class="p-3 border-bottom bg-light" *ngIf="selectedUser">
+          <strong>{{ selectedUser.name }}</strong>
+          <span class="text-muted small ms-2">{{ selectedUser.role }}</span>
         </div>
-        <div class="flex-grow-1 overflow-auto p-2 d-flex flex-column gap-2">
+        <div class="p-3 border-bottom bg-light" *ngIf="!selectedUser">
+          <span class="text-muted small">{{ t('Sélectionnez un contact pour discuter', 'Select a contact to chat') }}</span>
+        </div>
+
+        <div class="flex-grow-1 p-3" style="overflow-y: auto; max-height: 450px;">
           <div *ngFor="let m of conversation"
-               class="p-2 rounded"
-               style="max-width: 75%;"
-               [class.align-self-end]="m.from_user_id === auth.currentUser()?.id"
-               [class.bg-primary]="m.from_user_id === auth.currentUser()?.id"
-               [class.text-white]="m.from_user_id === auth.currentUser()?.id"
-               [class.bg-light]="m.from_user_id !== auth.currentUser()?.id">
-            {{ m.content }}
-            <div class="small opacity-75 mt-1">{{ m.created_at | date:'HH:mm' }}</div>
+               class="mb-2 d-flex"
+               [class.justify-content-end]="m.from_user_id !== selectedUser?.id">
+            <div class="p-2 rounded"
+                 style="max-width: 70%;"
+                 [class.bg-warning]="m.from_user_id !== selectedUser?.id"
+                 [class.bg-light]="m.from_user_id === selectedUser?.id">
+              <div>{{ m.content }}</div>
+              <div class="text-muted text-end" style="font-size: 0.65rem;">{{ m.created_at | date:'dd/MM HH:mm' }}</div>
+            </div>
           </div>
-          <div *ngIf="conversation.length === 0" class="text-muted text-center mt-3">
-            {{ t('Aucun message. Envoyez le premier !', 'No messages. Send the first one!') }}
+          <div *ngIf="selectedUser && conversation.length === 0" class="text-center text-muted small mt-4">
+            {{ t('Aucun message pour le moment. Démarrez la conversation !', 'No messages yet. Start the conversation!') }}
           </div>
         </div>
-        <div class="p-2 border-top d-flex gap-2">
-          <input class="form-control" [placeholder]="t('Votre message...', 'Your message...')" [(ngModel)]="chatInput" (keyup.enter)="sendMsg()">
-          <button class="btn btn-primary" (click)="sendMsg()">{{ t('Envoyer', 'Send') }}</button>
+
+        <div class="p-3 border-top d-flex gap-2" *ngIf="selectedUser">
+          <input class="form-control" [(ngModel)]="chatInput" [placeholder]="t('Écrire un message...', 'Write a message...')" (keyup.enter)="sendMsg()">
+          <button class="btn btn-warning fw-bold" (click)="sendMsg()">{{ t('Envoyer', 'Send') }}</button>
         </div>
       </div>
+
     </div>
   </div>
 
-  <div *ngIf="activeTab === 'forum'" class="card p-3">
-    <h5 class="mb-3">{{ t('Forum communautaire', 'Community forum') }}</h5>
-    <div style="max-height: 400px; overflow-y: auto;">
-      <div *ngFor="let p of forumPosts" class="border-bottom py-2">
-        <div class="d-flex justify-content-between">
-          <strong>{{ p.from_user?.role === 'admin' ? '[Admin] ' : '' }}{{ p.from_user?.name }}</strong>
-          <div>
-            <small class="text-muted me-2">{{ p.created_at | date:'dd/MM HH:mm' }}</small>
-            <button *ngIf="auth.currentUser()?.role === 'admin'" class="btn btn-sm btn-outline-danger" (click)="deleteForumPost(p.id)">x</button>
-          </div>
-        </div>
-        <div>{{ p.content }}</div>
-      </div>
-      <div *ngIf="forumPosts.length === 0" class="text-muted text-center py-3">
-        {{ t('Aucun message dans le forum.', 'No messages in the forum.') }}
-      </div>
+  <!-- ===== ONGLET FORUM ===== -->
+  <div *ngIf="activeTab === 'forum'" class="card p-4">
+    <h5 class="mb-3">🗣️ {{ t('Forum communautaire', 'Community forum') }}</h5>
+
+    <div class="d-flex gap-2 mb-3">
+      <input class="form-control" [(ngModel)]="forumInput" [placeholder]="t('Écrire un message au forum...', 'Write a forum message...')" (keyup.enter)="postForum()">
+      <button class="btn btn-warning fw-bold" (click)="postForum()">{{ t('Publier', 'Post') }}</button>
     </div>
-    <div class="d-flex gap-2 mt-3">
-      <input class="form-control" [placeholder]="t('Votre message au forum...', 'Your forum message...')" [(ngModel)]="forumInput" (keyup.enter)="postForum()">
-      <button class="btn btn-success" (click)="postForum()">{{ t('Publier', 'Post') }}</button>
+
+    <div *ngFor="let p of forumPosts" class="border-bottom py-2 d-flex justify-content-between align-items-start">
+      <div>
+        <div class="fw-bold small">{{ p.from_user?.name || t('Utilisateur', 'User') }}</div>
+        <div>{{ p.content }}</div>
+        <div class="text-muted" style="font-size: 0.7rem;">{{ p.created_at | date:'dd/MM HH:mm' }}</div>
+      </div>
+      <button class="btn btn-sm btn-outline-danger" *ngIf="auth.currentUser()?.id === p.from_user_id || auth.currentUser()?.role === 'admin'" (click)="deleteForumPost(p.id)">
+        ✕
+      </button>
+    </div>
+
+    <div *ngIf="forumPosts.length === 0" class="p-3 text-center text-muted small">
+      {{ t('Aucun message dans le forum pour le moment.', 'No forum messages yet.') }}
     </div>
   </div>
 

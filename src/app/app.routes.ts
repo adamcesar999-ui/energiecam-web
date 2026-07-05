@@ -14,6 +14,7 @@ import { Comparison } from './pages/comparison/comparison';
 import { PriceComparatorComponent } from './components/price-comparator/price-comparator';
 import { ForgotPassword } from './pages/forgot-password/forgot-password';
 import { ResetPassword } from './pages/reset-password/reset-password';
+import { Profile } from './pages/profile/profile';
 
 export const routes: Routes = [
   { path: 'ai-assistant', component: AiAssistant },
@@ -32,4 +33,5 @@ export const routes: Routes = [
   { path: 'price-comparator', component: PriceComparatorComponent },
   { path: 'forgot-password', component: ForgotPassword },
   { path: 'reset-password', component: ResetPassword },
+  { path: 'profile', component: Profile },
 ];

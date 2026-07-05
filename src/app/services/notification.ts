@@ -7,6 +7,7 @@ export interface AppNotification {
   text: string;
   read: boolean;
   created_at: string;
+  from_user_id?: number;
 }
 
 @Injectable({
@@ -23,5 +24,9 @@ export class NotificationService {
 
   markAllRead(): Observable<any> {
     return this.http.post(`${this.apiUrl}/mark-read`, {});
+  }
+
+  markOneRead(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/read`, {});
   }
 }

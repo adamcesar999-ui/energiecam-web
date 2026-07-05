@@ -40,8 +40,16 @@
         <span>{{ t('IA reflechit...', 'AI is thinking...') }}</span>
       </div>
     </div>
-    <div class="p-3 border-top d-flex gap-2">
-      <input class="form-control" [placeholder]="t('Votre question sur les energies renouvelables...', 'Your question about renewable energy...')" [(ngModel)]="chatInput" (keyup.enter)="sendChat()" [disabled]="chatLoading">
+    <div class="p-3 border-top d-flex gap-2 align-items-end">
+      <textarea
+        class="form-control"
+        rows="1"
+        style="resize: none; max-height: 150px; overflow-y: auto;"
+        [placeholder]="t('Votre question sur les energies renouvelables... (Entrée pour envoyer, Maj+Entrée pour une nouvelle ligne)', 'Your question about renewable energy... (Enter to send, Shift+Enter for a new line)')"
+        [(ngModel)]="chatInput"
+        (keydown)="onChatKeydown($event)"
+        [disabled]="chatLoading"
+      ></textarea>
       <button class="btn btn-primary" (click)="sendChat()" [disabled]="chatLoading || !chatInput.trim()">
         {{ t('Envoyer', 'Send') }}
       </button>

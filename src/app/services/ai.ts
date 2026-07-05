@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface ChatHistoryEntry {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -10,8 +15,8 @@ export class AiService {
 
   constructor(private http: HttpClient) {}
 
-  chat(message: string): Observable<{ response: string }> {
-    return this.http.post<{ response: string }>(`${this.apiUrl}/chat`, { message });
+  chat(message: string, history: ChatHistoryEntry[] = []): Observable<{ response: string }> {
+    return this.http.post<{ response: string }>(`${this.apiUrl}/chat`, { message, history });
   }
 
   recommend(data: {

@@ -1,12 +1,10 @@
 <div class="container py-4">
 
-  <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="fw-bold">⚡ {{ t('Calculateur de Dimensionnement', 'Sizing Calculator') }}</h1>
     <a routerLink="/dashboard" class="btn btn-outline-secondary">← {{ t('Retour', 'Back') }}</a>
   </div>
 
-  <!-- Step indicator -->
   <div class="d-flex gap-2 mb-4">
     <div class="flex-fill text-center p-2 rounded fw-bold"
          [class.bg-warning]="step === 1" [class.bg-success]="step > 1" [class.text-white]="step > 1" [class.bg-light]="step < 1">
@@ -22,15 +20,13 @@
     </div>
   </div>
 
-  <!-- ============ STEP 1 : CONSOMMATION ============ -->
+  <!-- STEP 1 -->
   <div *ngIf="step === 1" class="card p-4">
     <h4 class="mb-3">🏠 {{ t('Saisie de la Consommation Énergétique', 'Energy Consumption Input') }}</h4>
-
     <div class="d-flex justify-content-between align-items-center mb-2">
       <strong>{{ t('Appareils électriques', 'Electrical appliances') }}</strong>
       <button class="btn btn-sm btn-outline-primary" (click)="addAppliance()">+ {{ t('Ajouter un appareil', 'Add appliance') }}</button>
     </div>
-
     <div class="table-responsive">
       <table class="table table-bordered align-middle">
         <thead class="table-light">
@@ -45,7 +41,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let app of appliances; let i = index">
-            <td><input class="form-control" [(ngModel)]="app.name"></td>
+            <td><input class="form-control" [(ngModel)]="app.name" [placeholder]="t('Nom de l\'appareil', 'Appliance name')"></td>
             <td><input type="number" class="form-control" [(ngModel)]="app.power"></td>
             <td><input type="number" class="form-control" [(ngModel)]="app.hours"></td>
             <td><input type="number" class="form-control" [(ngModel)]="app.qty"></td>
@@ -55,27 +51,94 @@
         </tbody>
       </table>
     </div>
-
     <div class="alert alert-warning d-flex justify-content-between fw-bold">
       <span>{{ t('Consommation totale journalière :', 'Total daily consumption:') }}</span>
       <span>{{ totalConsumption | number:'1.0-0' }} Wh/{{ t('jour', 'day') }}</span>
     </div>
-
     <button class="btn btn-warning fw-bold" (click)="goToStep(2)">{{ t('Suivant', 'Next') }} →</button>
   </div>
 
-  <!-- ============ STEP 2 : LOCALISATION ============ -->
+  <!-- STEP 2 -->
   <div *ngIf="step === 2" class="card p-4">
     <h4 class="mb-3">📍 {{ t('Localisation & Paramètres', 'Location & Parameters') }}</h4>
-
     <div class="row">
       <div class="col-md-6">
+
         <div class="mb-3">
-          <label class="form-label">{{ t('Ville / Région', 'City / Region') }}</label>
-          <select class="form-select" [(ngModel)]="selectedCity" (ngModelChange)="onCityChange()" [compareWith]="cityCompare">
-            <option [ngValue]="null">{{ t('-- Choisir une ville --', '-- Choose a city --') }}</option>
-            <option *ngFor="let c of cities" [ngValue]="c">{{ c.name }}</option>
+          <label class="form-label">{{ t('Région', 'Region') }}</label>
+          <select class="form-select" [(ngModel)]="selectedRegionName" (ngModelChange)="onRegionGroupChange()">
+            <option [ngValue]="null">{{ t('-- Choisir une région --', '-- Choose a region --') }}</option>
+            <option *ngFor="let g of regionGroups" [ngValue]="g.name">{{ g.name }}</option>
           </select>
+        </div>
+
+        <div class="mb-3" *ngIf="selectedRegionName">
+          <label class="form-label">{{ t('Ville', 'City') }}</label>
+          <div class="d-flex gap-2">
+            <select class="form-select" [(ngModel)]="selectedCity" (ngModelChange)="onCityChange()" [compareWith]="cityCompare">
+              <option [ngValue]="null">{{ t('-- Choisir une ville --', '-- Choose a city --') }}</option>
+              <option *ngFor="let c of filteredCities" [ngValue]="c">{{ c.name }}{{ c.isCustom ? ' ⭐' : '' }}</option>
+            </select>
+            <button *ngIf="selectedCity?.isCustom" class="btn btn-outline-danger" type="button"
+                    [title]="t('Supprimer cette ville', 'Delete this city')"
+                    (click)="deleteCustomCity(selectedCity!)">
+              🗑️
+            </button>
+          </div>
+          <small class="text-muted" *ngIf="selectedCity?.isCustom">⭐ {{ t('Ville personnalisée', 'Custom city') }}</small>
+        </div>
+
+        <!-- Ajout ville personnalisée -->
+        <div class="mb-3">
+          <button class="btn btn-sm btn-outline-warning" (click)="showAddCityForm = !showAddCityForm">
+            📍 {{ t('Ma ville ne figure pas dans la liste', 'My city is not in the list') }}
+          </button>
+        </div>
+
+        <div *ngIf="showAddCityForm" class="card card-body bg-light mb-3">
+          <div class="fw-bold mb-2">{{ t('Ajouter une ville camerounaise', 'Add a Cameroonian city') }}</div>
+
+          <div class="mb-2">
+            <label class="form-label small mb-1">{{ t('Nom de la ville', 'City name') }} *</label>
+            <input class="form-control" [placeholder]="t('Nom de la ville', 'City name')" [(ngModel)]="newCityName">
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small mb-1">{{ t('Région', 'Region') }} *</label>
+            <select class="form-select" [(ngModel)]="newCityRegion" required>
+              <option [ngValue]="null" disabled>{{ t('-- Choisir une région --', '-- Choose a region --') }}</option>
+              <option *ngFor="let g of regionGroups" [ngValue]="g.name">{{ g.name }}</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small mb-1">Latitude *</label>
+              <input type="number" step="0.0001" class="form-control" placeholder="Latitude" [(ngModel)]="newCityLat">
+            </div>
+            <div class="col-6">
+              <label class="form-label small mb-1">Longitude *</label>
+              <input type="number" step="0.0001" class="form-control" placeholder="Longitude" [(ngModel)]="newCityLon">
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small mb-1">{{ t('Ensoleillement (optionnel)', 'Sunshine (optional)') }}</label>
+            <input type="number" step="0.1" class="form-control" [placeholder]="t('Laissez vide pour auto (PVGIS)', 'Leave empty for auto (PVGIS)')" [(ngModel)]="newCitySunHours">
+          </div>
+
+          <small class="text-muted mb-2">{{ t('Trouvez les coordonnées sur maps.google.com', 'Find coordinates on maps.google.com (right click → "What\'s here")') }}</small>
+          <button class="btn btn-warning btn-sm mt-1"
+                  (click)="addCustomCity()"
+                  [disabled]="!newCityName || !newCityRegion || newCityLat === null || newCityLon === null">
+            {{ t('Ajouter et récupérer données PVGIS', 'Add and fetch PVGIS data') }}
+          </button>
+          <div *ngIf="addCityMessage" class="alert mt-2 mb-0 py-2"
+               [class.alert-warning]="addCityMessage.includes('⚠️')"
+               [class.alert-info]="addCityMessage.includes('⏳')"
+               [class.alert-success]="addCityMessage.includes('✅')">
+            {{ addCityMessage }}
+          </div>
         </div>
 
         <div *ngIf="loadingPvgis" class="alert alert-info">
@@ -99,6 +162,7 @@
         <div class="mb-3">
           <label class="form-label">{{ t('Jours d\'autonomie', 'Autonomy days') }}</label>
           <select class="form-select" [(ngModel)]="autonomyDays">
+            <option [ngValue]="null" disabled>{{ t('-- Choisir --', '-- Choose --') }}</option>
             <option [ngValue]="1">1 {{ t('jour', 'day') }}</option>
             <option [ngValue]="2">2 {{ t('jours', 'days') }}</option>
             <option [ngValue]="3">3 {{ t('jours', 'days') }}</option>
@@ -116,6 +180,7 @@
         <div class="mb-3">
           <label class="form-label">{{ t('Puissance panneau (Wc)', 'Panel power (Wp)') }}</label>
           <select class="form-select" [(ngModel)]="panelPower">
+            <option [ngValue]="null" disabled>{{ t('-- Choisir --', '-- Choose --') }}</option>
             <option [ngValue]="200">200 Wc</option>
             <option [ngValue]="300">300 Wc</option>
             <option [ngValue]="400">400 Wc</option>
@@ -124,14 +189,13 @@
         </div>
       </div>
     </div>
-
     <div class="d-flex gap-2">
       <button class="btn btn-outline-secondary" (click)="goToStep(1)">← {{ t('Précédent', 'Previous') }}</button>
       <button class="btn btn-warning fw-bold" (click)="calculateSolar()">⚡ {{ t('Calculer', 'Calculate') }}</button>
     </div>
   </div>
 
-  <!-- ============ STEP 3 : RÉSULTATS ============ -->
+  <!-- STEP 3 -->
   <div id="solarResultsSection" *ngIf="step === 3 && results">
 
     <div *ngIf="saveMessage" class="alert alert-success">{{ saveMessage }}</div>
@@ -139,7 +203,6 @@
       <span class="spinner-border spinner-border-sm me-2"></span>{{ t('Sauvegarde en cours...', 'Saving...') }}
     </div>
 
-    <!-- Résumé -->
     <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #fff8e1, #e8f5e9);">
       <h4 class="mb-3">✅ {{ t('Résultats du Dimensionnement Solaire', 'Solar Sizing Results') }} – {{ results.city }}</h4>
       <div class="row text-center g-3">
@@ -182,14 +245,11 @@
       </div>
     </div>
 
-    <!-- Options Panneaux -->
     <div class="card p-4 mb-3">
       <h5 class="mb-3">🛒 {{ t('Options de panneaux disponibles (6 types)', 'Available panel options (6 types)') }}</h5>
       <div class="row g-3">
         <div class="col-md-4" *ngFor="let p of results.panelOptions">
-          <div class="border rounded p-3 h-100"
-               [class.border-warning]="p.recommended"
-               [class.border-2]="p.recommended">
+          <div class="border rounded p-3 h-100" [class.border-warning]="p.recommended" [class.border-2]="p.recommended">
             <span *ngIf="p.recommended" class="badge bg-warning text-dark mb-2">⭐ {{ t('Recommandé', 'Recommended') }}</span>
             <div class="fw-bold">{{ p.name }}</div>
             <div class="small text-muted">🏭 {{ p.brand }}</div>
@@ -202,14 +262,11 @@
       </div>
     </div>
 
-    <!-- Options Batteries -->
     <div class="card p-4 mb-3">
       <h5 class="mb-3">🔋 {{ t('Options de batteries disponibles', 'Available battery options') }}</h5>
       <div class="row g-3">
         <div class="col-md-3" *ngFor="let b of results.battOptions">
-          <div class="border rounded p-3 h-100"
-               [class.border-warning]="b.recommended"
-               [class.border-2]="b.recommended">
+          <div class="border rounded p-3 h-100" [class.border-warning]="b.recommended" [class.border-2]="b.recommended">
             <span *ngIf="b.recommended" class="badge bg-warning text-dark mb-2">⭐ {{ t('Recommandé', 'Recommended') }}</span>
             <div class="fw-bold">{{ b.name }}</div>
             <div class="small text-muted">🏭 {{ b.brand }}</div>
@@ -221,7 +278,6 @@
       </div>
     </div>
 
-    <!-- Coûts -->
     <div class="card p-4 mb-3">
       <h5 class="mb-3">💰 {{ t('Estimation des Coûts', 'Cost Estimation') }}</h5>
       <table class="table">
@@ -239,7 +295,6 @@
       </table>
     </div>
 
-    <!-- ROI -->
     <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e8f5e9, #f1f8e9);">
       <h5 class="mb-3">📈 {{ t('Retour sur Investissement (ROI)', 'Return on Investment (ROI)') }}</h5>
       <div class="row text-center g-3 mb-3">
@@ -268,7 +323,6 @@
           </div>
         </div>
       </div>
-
       <table class="table table-bordered">
         <thead class="table-success">
           <tr>
@@ -295,7 +349,6 @@
           </tr>
         </tbody>
       </table>
-
       <div class="alert alert-success mt-2 mb-0">
         💡 {{ t('Basé sur les tarifs', 'Based on') }} <strong>SOCADEL</strong>.
         {{ t('Consommation mensuelle estimée', 'Estimated monthly consumption') }} : <strong>{{ results.roi.consommationMensuelle | number:'1.0-0' }} kWh</strong> —
@@ -306,25 +359,18 @@
       </div>
     </div>
 
-    <!-- Graphiques -->
     <div class="card p-4 mb-3">
       <h5 class="mb-3">📊 {{ t('Analyse Graphique', 'Graphical Analysis') }}</h5>
       <div class="row">
-        <div class="col-md-6 mb-3">
-          <canvas id="consoChart" height="300"></canvas>
-        </div>
-        <div class="col-md-6 mb-3">
-          <canvas id="costChart" height="300"></canvas>
-        </div>
-        <div class="col-12 mb-3">
-          <canvas id="prodChart" height="150"></canvas>
-        </div>
+        <div class="col-md-6 mb-3"><canvas id="consoChart" height="300"></canvas></div>
+        <div class="col-md-6 mb-3"><canvas id="costChart" height="300"></canvas></div>
+        <div class="col-12 mb-3"><canvas id="prodChart" height="150"></canvas></div>
       </div>
     </div>
 
-    <!-- Boutons d'action -->
     <div class="d-flex gap-2 mb-4 no-print">
       <button class="btn btn-outline-secondary" (click)="resetCalculator()">🔄 {{ t('Nouveau calcul', 'New calculation') }}</button>
+      <button class="btn btn-outline-primary" (click)="exportWithCharts()">📄 {{ t('Exporter en PDF', 'Export as PDF') }}</button>
       <a routerLink="/projects" class="btn btn-warning fw-bold">📁 {{ t('Voir mes projets', 'View my projects') }}</a>
     </div>
 

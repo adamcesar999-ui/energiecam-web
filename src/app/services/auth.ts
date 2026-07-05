@@ -80,4 +80,9 @@ export class Auth {
       })
     );
   }
+
+  // ⬅️ NOUVEAU
+  changePassword(data: { current_password: string; new_password: string; new_password_confirmation: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/profile/password`, data);
+  }
 }

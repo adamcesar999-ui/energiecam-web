@@ -1,60 +1,137 @@
 <div class="container py-4">
 
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold">{{ t('Comparaison des Systemes Energetiques', 'Energy System Comparison') }}</h1>
-    <a routerLink="/dashboard" class="btn btn-outline-secondary">{{ t('Retour', 'Back') }}</a>
+    <h1 class="fw-bold">⚡ {{ t('Comparaison des Systèmes Énergétiques', 'Energy Systems Comparison') }}</h1>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">← {{ t('Retour', 'Back') }}</a>
   </div>
 
   <div class="card p-4 mb-4">
-    <h5 class="mb-3">{{ t('Parametres de comparaison', 'Comparison parameters') }}</h5>
+    <h5 class="mb-3">{{ t('Paramètres de comparaison', 'Comparison parameters') }}</h5>
     <div class="row g-3">
       <div class="col-md-3">
         <label class="form-label">{{ t('Consommation (Wh/jour)', 'Consumption (Wh/day)') }}</label>
-        <input type="number" class="form-control" [(ngModel)]="consumption">
+        <input type="number" class="form-control" [(ngModel)]="consumption" placeholder="{{ t('Ex: 4000', 'E.g. 4000') }}">
       </div>
+
       <div class="col-md-3">
-        <label class="form-label">{{ t('Ville', 'City') }}</label>
-        <select class="form-select" [(ngModel)]="city" (ngModelChange)="onCityChange()">
-          <option *ngFor="let c of cities" [value]="c.name">{{ c.name }}</option>
+        <label class="form-label">{{ t('Région', 'Region') }}</label>
+        <select class="form-select" [(ngModel)]="selectedRegionName" (ngModelChange)="onRegionGroupChange()">
+          <option [ngValue]="null">{{ t('-- Choisir une région --', '-- Choose a region --') }}</option>
+          <option *ngFor="let g of regionGroups" [ngValue]="g.name">{{ g.name }}</option>
         </select>
       </div>
-      <div class="col-md-2">
-        <label class="form-label">{{ t('Soleil (kWh/m2/j)', 'Sun (kWh/m2/d)') }}</label>
-        <input type="number" step="0.1" class="form-control" [(ngModel)]="sunHours">
+
+      <div class="col-md-3" *ngIf="selectedRegionName">
+        <label class="form-label">{{ t('Ville', 'City') }}</label>
+        <div class="d-flex gap-2">
+          <select class="form-select" [(ngModel)]="selectedCity" (ngModelChange)="onCityChange()" [compareWith]="cityCompare">
+            <option [ngValue]="null">{{ t('-- Choisir une ville --', '-- Choose a city --') }}</option>
+            <option *ngFor="let c of filteredCities" [ngValue]="c">{{ c.name }}{{ c.isCustom ? ' ⭐' : '' }}</option>
+          </select>
+          <button *ngIf="selectedCity?.isCustom" class="btn btn-outline-danger" type="button"
+                  [title]="t('Supprimer cette ville', 'Delete this city')"
+                  (click)="deleteCustomCity(selectedCity!)">
+            🗑️
+          </button>
+        </div>
       </div>
+
+      <div class="col-md-2">
+        <label class="form-label">{{ t('Soleil (kWh/m²/j)', 'Sun (kWh/m²/d)') }}</label>
+        <input type="number" step="0.1" class="form-control" [(ngModel)]="sunHours" placeholder="{{ t('Auto', 'Auto') }}">
+      </div>
+
       <div class="col-md-2">
         <label class="form-label">{{ t('Vent (m/s)', 'Wind (m/s)') }}</label>
-        <input type="number" step="0.1" class="form-control" [(ngModel)]="windSpeed">
+        <input type="number" step="0.1" class="form-control" [(ngModel)]="windSpeed" placeholder="{{ t('Auto', 'Auto') }}">
       </div>
+
       <div class="col-md-2">
         <label class="form-label">{{ t('Budget FCFA', 'Budget FCFA') }} <small class="text-muted">{{ t('(optionnel)', '(optional)') }}</small></label>
-        <input type="number" class="form-control" [(ngModel)]="budget" placeholder="500000">
+        <input type="number" class="form-control" [(ngModel)]="budget" placeholder="{{ t('Ex: 500000', 'E.g. 500000') }}">
       </div>
     </div>
-    <button class="btn btn-warning fw-bold mt-3" (click)="compare()">{{ t('Comparer les 3 systemes', 'Compare the 3 systems') }}</button>
+
+    <div class="d-flex align-items-center gap-3 mt-3">
+      <button class="btn btn-warning fw-bold" (click)="compare()" [disabled]="!isFormValid()">
+        ⚡ {{ t('Comparer les 3 systèmes', 'Compare the 3 systems') }}
+      </button>
+      <small *ngIf="!isFormValid()" class="text-danger">
+        {{ t('Veuillez remplir : consommation, région, ville, ensoleillement et vent.', 'Please fill: consumption, region, city, sunshine and wind.') }}
+      </small>
+    </div>
+
+    <div class="mt-3">
+      <button class="btn btn-sm btn-outline-warning" (click)="showAddCityForm = !showAddCityForm">
+        📍 {{ t('Ma ville ne figure pas dans la liste', 'My city is not in the list') }}
+      </button>
+    </div>
+
+    <div *ngIf="showAddCityForm" class="card card-body bg-light mt-2">
+      <div class="fw-bold mb-2">{{ t('Ajouter une ville camerounaise', 'Add a Cameroonian city') }}</div>
+      <div class="row g-2">
+        <div class="col-4">
+          <input class="form-control" [placeholder]="t('Nom de la ville *', 'City name *')" [(ngModel)]="newCityName" required>
+        </div>
+        <div class="col-4">
+          <label class="form-label fw-bold">{{ t('Région *', 'Region *') }}</label>
+          <select class="form-select" [(ngModel)]="newCityRegion" required>
+            <option [ngValue]="null" disabled>-- {{ t('Choisir une région *', 'Choose a region *') }} --</option>
+            <option *ngFor="let g of regionGroups" [ngValue]="g.name">{{ g.name }}</option>
+          </select>
+        </div>
+        <div class="col-2">
+          <input type="number" step="0.0001" class="form-control" placeholder="Latitude *" [(ngModel)]="newCityLat" required>
+        </div>
+        <div class="col-2">
+          <input type="number" step="0.0001" class="form-control" placeholder="Longitude *" [(ngModel)]="newCityLon" required>
+        </div>
+      </div>
+      <small class="text-muted mb-2">{{ t('Trouvez les coordonnées sur maps.google.com', 'Find coordinates on maps.google.com (right click → "What\'s here")') }}</small>
+      <button class="btn btn-warning btn-sm mt-1" (click)="addCustomCity()"
+              [disabled]="!newCityName || !newCityRegion || newCityLat === null || newCityLon === null">
+        {{ t('Ajouter cette ville', 'Add this city') }}
+      </button>
+      <div *ngIf="addCityMessage" class="alert mt-2 mb-0 py-2"
+           [class.alert-warning]="addCityStatus === 'missing'"
+           [class.alert-success]="addCityStatus === 'added'"
+           [class.alert-info]="addCityStatus === 'loading'">
+        {{ addCityMessage }}
+      </div>
+    </div>
+
+    <div *ngIf="loadingPvgis" class="alert alert-info mt-2">
+      <span class="spinner-border spinner-border-sm me-2"></span>
+      {{ t('Récupération des données PVGIS en cours...', 'Fetching PVGIS data...') }}
+    </div>
+    <div *ngIf="pvgisSource && !loadingPvgis" class="alert mt-2"
+         [class.alert-success]="pvgisSource.includes('✅')"
+         [class.alert-warning]="pvgisSource.includes('⚠️')">
+      {{ pvgisSource }}
+    </div>
   </div>
 
   <div *ngIf="calculated">
 
     <div class="alert alert-success text-center fs-5 fw-bold mb-4">
-      {{ t('Meilleur systeme pour votre cas :', 'Best system for your case:') }} {{ getBestSystem() }}
+      {{ t('Meilleur système pour votre cas :', 'Best system for your case:') }} {{ getBestSystem() }}
     </div>
 
     <div class="card p-4 mb-4">
-      <h5 class="mb-3">{{ t('Tableau Comparatif Detaille', 'Detailed Comparison Table') }}</h5>
+      <h5 class="mb-3">{{ t('Tableau Comparatif Détaillé', 'Detailed Comparison Table') }}</h5>
       <div class="table-responsive">
         <table class="table table-bordered text-center align-middle">
           <thead class="table-dark">
             <tr>
-              <th>{{ t('Critere', 'Criterion') }}</th>
+              <th>{{ t('Critère', 'Criterion') }}</th>
               <th>{{ t('Solaire', 'Solar') }}</th>
-              <th>{{ t('Eolien', 'Wind') }}</th>
+              <th>{{ t('Éolien', 'Wind') }}</th>
               <th>{{ t('Hybride', 'Hybrid') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td class="fw-bold text-start">{{ t('Cout total', 'Total cost') }}</td>
+              <td class="fw-bold text-start">{{ t('Coût total', 'Total cost') }}</td>
               <td class="text-warning fw-bold">{{ solarResult.totalCost | number:'1.0-0' }} FCFA</td>
               <td class="text-primary fw-bold">{{ windResult.totalCost | number:'1.0-0' }} FCFA</td>
               <td class="text-success fw-bold">{{ hybridResult.totalCost | number:'1.0-0' }} FCFA</td>
@@ -63,10 +140,10 @@
               <td class="fw-bold text-start">{{ t('Score global', 'Overall score') }}</td>
               <td><span class="badge bg-warning text-dark fs-6">{{ solarResult.score }}/100</span></td>
               <td><span class="badge bg-primary fs-6">{{ windResult.score }}/100</span></td>
-              <td><span class="badge bg-success fs-6">{{ [hybridResult.score, 100].join('/') | slice:0:6 }}</span></td>
+              <td><span class="badge bg-success fs-6">{{ hybridResult.score }}/100</span></td>
             </tr>
             <tr>
-              <td class="fw-bold text-start">{{ t('Fiabilite', 'Reliability') }}</td>
+              <td class="fw-bold text-start">{{ t('Fiabilité', 'Reliability') }}</td>
               <td>{{ translateValue(solarResult.reliability) }}</td>
               <td>{{ translateValue(windResult.reliability) }}</td>
               <td>{{ translateValue(hybridResult.reliability) }}</td>
@@ -78,19 +155,19 @@
               <td>{{ translateValue(hybridResult.maintenance) }}</td>
             </tr>
             <tr>
-              <td class="fw-bold text-start">{{ t('Duree de vie', 'Lifespan') }}</td>
+              <td class="fw-bold text-start">{{ t('Durée de vie', 'Lifespan') }}</td>
               <td>{{ translateValue(solarResult.lifespan) }}</td>
               <td>{{ translateValue(windResult.lifespan) }}</td>
               <td>{{ translateValue(hybridResult.lifespan) }}</td>
             </tr>
             <tr>
-              <td class="fw-bold text-start">{{ t('Depend du soleil', 'Depends on sun') }}</td>
+              <td class="fw-bold text-start">{{ t('Dépend du soleil', 'Depends on sun') }}</td>
               <td>{{ t('Oui', 'Yes') }}</td>
               <td>{{ t('Non', 'No') }}</td>
               <td>{{ t('Partiellement', 'Partially') }}</td>
             </tr>
             <tr>
-              <td class="fw-bold text-start">{{ t('Depend du vent', 'Depends on wind') }}</td>
+              <td class="fw-bold text-start">{{ t('Dépend du vent', 'Depends on wind') }}</td>
               <td>{{ t('Non', 'No') }}</td>
               <td>{{ t('Oui', 'Yes') }}</td>
               <td>{{ t('Partiellement', 'Partially') }}</td>
@@ -106,14 +183,19 @@
     </div>
 
     <div class="card p-4 mb-4">
-      <h5 class="mb-3">{{ t('Recommandation IA Claude', 'Claude AI Recommendation') }}</h5>
+      <h5 class="mb-3">{{ t('Recommandation IA', 'AI Recommendation') }}</h5>
       <div *ngIf="aiLoading" class="d-flex align-items-center gap-2 text-muted">
         <span class="spinner-border spinner-border-sm"></span>
-        <span>{{ t('IA analyse votre situation...', 'AI is analyzing your situation...') }}</span>
+        <span>{{ t('L\'IA analyse votre situation...', 'AI is analyzing your situation...') }}</span>
       </div>
       <div *ngIf="aiRecommendation && !aiLoading" style="white-space: pre-wrap;">
         {{ aiRecommendation }}
       </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-4">
+      <button class="btn btn-outline-secondary" (click)="resetComparison()">🔄 {{ t('Nouvelle comparaison', 'New comparison') }}</button>
+      <a routerLink="/projects" class="btn btn-warning fw-bold">📁 {{ t('Voir mes projets', 'View my projects') }}</a>
     </div>
 
   </div>
