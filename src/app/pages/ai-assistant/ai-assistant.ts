@@ -123,6 +123,12 @@ export class AiAssistant {
       }
     });
   }
+onChatKeydown(event: KeyboardEvent) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    this.sendChat();
+  }
+}
 
   // ===== RECOMMANDATION =====
   getRecommendation() {
