@@ -1,0 +1,174 @@
+.moderation-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.filter-tabs button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.filter-tabs button.active {
+  background: #f59e0b;
+  color: white;
+  border-color: #f59e0b;
+}
+
+.empty-state {
+  text-align: center;
+  color: #9ca3af;
+  padding: 3rem;
+}
+
+.ad-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ad-row {
+  display: flex;
+  gap: 1rem;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 1rem;
+  align-items: center;
+}
+
+.ad-thumb {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  background: #f9f9f9;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.ad-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ad-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ad-row-title {
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.ad-row-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0.2rem 0;
+}
+
+.ad-row-meta {
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+.ad-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ad-actions button {
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-approve { background: #d1fae5; color: #047857; }
+.btn-reject { background: #fee2e2; color: #b91c1c; }
+.btn-delete { background: #f3f4f6; color: #374151; }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.pagination button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 14px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 420px;
+}
+
+.modal-box .form-group {
+  margin-bottom: 1rem;
+}
+
+.modal-box label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.modal-actions button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-cancel { background: #f3f4f6; color: #374151; }
+.btn-confirm-approve { background: #10b981; color: white; }
+.btn-confirm-reject { background: #ef4444; color: white; }

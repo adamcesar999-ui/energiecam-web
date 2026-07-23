@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { NewsService, NewsItem } from '../../services/news';
+import { AdService, Advertisement } from '../../services/ad';
 import { AppTranslateService } from '../../services/translate';
 
 @Component({
@@ -12,14 +13,20 @@ import { AppTranslateService } from '../../services/translate';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   news: NewsItem[] = [];
   loadingNews = true;
+
+  // ===== Publicités =====
+  ads: Advertisement[] = [];
+  currentAdIndex = 0;
+  private adInterval: any;
 
   constructor(
     public auth: Auth,
     private router: Router,
     private newsService: NewsService,
+    private adService: AdService,
     public translateService: AppTranslateService
   ) {}
 
@@ -42,6 +49,14 @@ export class Dashboard implements OnInit {
         });
       }
     });
+
+    this.loadAds();
+  }
+
+  ngOnDestroy() {
+    if (this.adInterval) {
+      clearInterval(this.adInterval);
+    }
   }
 
   logout() {
@@ -63,5 +78,46 @@ export class Dashboard implements OnInit {
       'Industrie'     : 'info'
     };
     return colors[cat] || 'secondary';
+  }
+
+  // ===================================================
+  // PUBLICITÉS
+  // ===================================================
+
+  loadAds() {
+    this.adService.getActiveAds().subscribe({
+      next: (ads) => {
+        this.ads = ads;
+        if (this.ads.length > 1) {
+          this.adInterval = setInterval(() => this.nextAd(), 6000);
+        }
+      },
+      error: () => {
+        this.ads = [];
+      }
+    });
+  }
+
+  get currentAd(): Advertisement | null {
+    return this.ads.length ? this.ads[this.currentAdIndex] : null;
+  }
+
+  nextAd() {
+    if (!this.ads.length) return;
+    this.currentAdIndex = (this.currentAdIndex + 1) % this.ads.length;
+  }
+
+  prevAd() {
+    if (!this.ads.length) return;
+    this.currentAdIndex = (this.currentAdIndex - 1 + this.ads.length) % this.ads.length;
+  }
+
+  goToAd(index: number) {
+    this.currentAdIndex = index;
+  }
+
+  onAdClick(ad: Advertisement) {
+    this.adService.trackClick(ad.id).subscribe();
+    window.open(ad.target_url, '_blank', 'noopener');
   }
 }

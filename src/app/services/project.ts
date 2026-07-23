@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Project {
   id?: number;
@@ -20,7 +21,7 @@ export interface Project {
 })
 export class ProjectService {
   static selectedProject: any = null;
-  private apiUrl = 'https://zestful-joy-production-291d.up.railway.app/api/projects';
+  private apiUrl = `${environment.apiUrl}/projects`;
 
   constructor(private http: HttpClient) {}
 

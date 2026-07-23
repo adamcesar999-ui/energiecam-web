@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface ChatHistoryEntry {
   role: 'user' | 'assistant';
@@ -11,7 +12,7 @@ export interface ChatHistoryEntry {
   providedIn: 'root'
 })
 export class AiService {
-  private apiUrl = 'https://zestful-joy-production-291d.up.railway.app/api/ai';
+  private apiUrl = `${environment.apiUrl}/ai`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,4 +1,4 @@
 export const environment = {
-  production: true,
-  apiUrl: 'https://zestful-joy-production-291d.up.railway.app/api'
+  production: false,
+  apiUrl: 'http://localhost:8000/api'   // ← On pointe vers le serveur PHP intégré
 };

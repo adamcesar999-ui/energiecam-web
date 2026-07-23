@@ -1,0 +1,132 @@
+<div class="moderation-wrapper">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"> {{ t('Modération des Publicités', 'Ad Moderation') }}</h2>
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">← {{ t('Retour', 'Back') }}</a>
+  </div>
+
+  <div *ngIf="actionMessage" class="alert alert-success">✅ {{ actionMessage }}</div>
+  <div *ngIf="actionError" class="alert alert-danger">⚠️ {{ actionError }}</div>
+
+  <div class="filter-tabs">
+    <button [class.active]="currentFilter === 'pending'" (click)="setFilter('pending')">
+       {{ t('En attente', 'Pending') }}
+    </button>
+    <button [class.active]="currentFilter === 'active'" (click)="setFilter('active')">
+      {{ t('Actives', 'Active') }}
+    </button>
+    <button [class.active]="currentFilter === 'rejected'" (click)="setFilter('rejected')">
+      {{ t('Rejetées', 'Rejected') }}
+    </button>
+    <button [class.active]="currentFilter === ''" (click)="setFilter('')">
+       {{ t('Toutes', 'All') }}
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-4"> {{ t('Chargement...', 'Loading...') }}</div>
+
+  <div *ngIf="!loading && ads.length === 0" class="empty-state">
+    {{ t('Aucune publicité dans cette catégorie.', 'No ads in this category.') }}
+  </div>
+
+  <div class="ad-list" *ngIf="!loading">
+    <div class="ad-row" *ngFor="let ad of ads">
+      <img [src]="ad.image_url" class="ad-thumb" [alt]="ad.company_name">
+
+      <div class="ad-info">
+        <div class="ad-row-header">
+          <strong>{{ ad.company_name }}</strong>
+          <span class="badge" [class]="'bg-' + statusBadge(ad.status)">{{ ad.status }}</span>
+        </div>
+        <div class="ad-row-title">{{ ad.title }}</div>
+        <div class="ad-row-desc">{{ ad.description }}</div>
+        <div class="ad-row-meta">
+           <a [href]="ad.target_url" target="_blank">{{ ad.target_url }}</a> ·
+           {{ ad.contact_email }} ·
+           {{ ad.clicks_count || 0 }} {{ t('clics', 'clicks') }}
+        </div>
+        <div class="ad-row-meta" *ngIf="ad.status === 'active'">
+           {{ t('Du', 'From') }} {{ ad.start_date || '—' }}
+          {{ t('au', 'to') }} {{ ad.end_date || t('indéterminé', 'indefinite') }}
+        </div>
+        <div class="ad-row-meta" *ngIf="ad.status === 'rejected' && ad.rejection_reason">
+          {{ t('Raison du rejet', 'Rejection reason') }} : <em>{{ ad.rejection_reason }}</em>
+        </div>
+      </div>
+
+      <div class="ad-actions">
+        <button *ngIf="ad.status !== 'active'" class="btn-approve" (click)="openApproveModal(ad)">
+           {{ t('Approuver', 'Approve') }}
+        </button>
+
+        <button *ngIf="ad.status === 'active'" class="btn-edit-dates" (click)="openEditDatesModal(ad)">
+           {{ t('Modifier dates', 'Edit dates') }}
+        </button>
+
+        <button *ngIf="ad.status === 'active'" class="btn-suspend" (click)="suspendAd(ad)">
+           {{ t('Suspendre', 'Suspend') }}
+        </button>
+
+        <button *ngIf="ad.status !== 'rejected'" class="btn-reject" (click)="openRejectModal(ad)">
+           {{ t('Rejeter', 'Reject') }}
+        </button>
+
+        <button class="btn-delete" (click)="deleteAd(ad)">
+           {{ t('Supprimer', 'Delete') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="!loading && lastPage > 1">
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">← {{ t('Précédent', 'Previous') }}</button>
+    <span>{{ currentPage }} / {{ lastPage }}</span>
+    <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === lastPage">{{ t('Suivant', 'Next') }} →</button>
+  </div>
+
+</div>
+
+<!-- Modal Approbation / Modification des dates -->
+<div class="modal-overlay" *ngIf="showApproveModal" (click)="cancelApprove()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h4>
+      <span *ngIf="!isEditingDates"> {{ t('Approuver la publicité', 'Approve ad') }}</span>
+      <span *ngIf="isEditingDates"> {{ t('Modifier les dates', 'Edit dates') }}</span>
+    </h4>
+    <p>{{ approvingAd?.title }} — {{ approvingAd?.company_name }}</p>
+
+    <div class="form-group">
+      <label>{{ t('Date de début', 'Start date') }}</label>
+      <input type="date" class="form-control" [(ngModel)]="approveStartDate">
+    </div>
+    <div class="form-group">
+      <label>{{ t('Date de fin (optionnel)', 'End date (optional)') }}</label>
+      <input type="date" class="form-control" [(ngModel)]="approveEndDate">
+      <small class="text-muted">{{ t('Laissez vide pour une durée indéterminée.', 'Leave empty for an indefinite duration.') }}</small>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cancelApprove()">{{ t('Annuler', 'Cancel') }}</button>
+      <button class="btn-confirm-approve" (click)="confirmApprove()">{{ t('Confirmer', 'Confirm') }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Rejet -->
+<div class="modal-overlay" *ngIf="showRejectModal" (click)="cancelReject()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h4>{{ t('Rejeter la publicité', 'Reject ad') }}</h4>
+    <p>{{ rejectingAd?.title }} — {{ rejectingAd?.company_name }}</p>
+
+    <div class="form-group">
+      <label>{{ t('Raison (envoyée à l\'annonceur)', 'Reason (sent to advertiser)') }}</label>
+      <textarea class="form-control" rows="3" [(ngModel)]="rejectReason"
+                [placeholder]="t('Ex: Image de mauvaise qualité, contenu non conforme...', 'Ex: Low quality image, non-compliant content...')"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cancelReject()">{{ t('Annuler', 'Cancel') }}</button>
+      <button class="btn-confirm-reject" (click)="confirmReject()">{{ t('Confirmer', 'Confirm') }}</button>
+    </div>
+  </div>
+</div>

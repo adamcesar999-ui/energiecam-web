@@ -1,7 +1,7 @@
 <div class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
   <div class="card shadow p-4" style="width: 100%; max-width: 420px;">
     <div class="text-center mb-4">
-      <h1 class="fw-bold" style="color:#F5A623;">☀️ EnergieCam</h1>
+      <h1 class="fw-bold" style="color:#F5A623;">EnergieCam</h1>
       <p class="text-muted">{{ t('Connexion à votre compte', 'Login to your account') }}</p>
     </div>
 
@@ -19,7 +19,7 @@
         <input type="password" class="form-control" [(ngModel)]="password" name="password" required placeholder="••••••••">
       </div>
       <div class="text-end mb-3">
-        <a routerLink="/forgot-password" class="text-warning fw-bold small">🔐 {{ t('Mot de passe oublié ?', 'Forgot password?') }}</a>
+        <a routerLink="/forgot-password" class="text-warning fw-bold small">{{ t('Mot de passe oublié ?', 'Forgot password?') }}</a>
       </div>
       <button type="submit" class="btn btn-warning w-100 fw-bold" [disabled]="loading">
         <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>

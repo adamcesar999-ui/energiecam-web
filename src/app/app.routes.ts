@@ -34,4 +34,10 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPassword },
   { path: 'reset-password', component: ResetPassword },
   { path: 'profile', component: Profile },
+  { path: 'advertise', loadComponent: () => import('./pages/advertise/advertise').then(m => m.Advertise) },
+  {
+  path: 'admin/ads', 
+  loadComponent: () => import('./pages/admin/ad-moderation/ad-moderation').then(m => m.AdModeration),
+  canActivate: [/* ton guard admin existant */]
+  }
 ];

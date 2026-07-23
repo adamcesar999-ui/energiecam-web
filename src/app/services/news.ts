@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface NewsItem {
   id?: number;
@@ -17,7 +18,7 @@ export interface NewsItem {
   providedIn: 'root'
 })
 export class NewsService {
-  private apiUrl = 'https://zestful-joy-production-291d.up.railway.app/api';
+ private apiUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,129 +1,196 @@
 <div class="dashboard-wrapper">
   <div *ngIf="auth.isLoggedIn(); else notLoggedIn">
 
-    <!-- Header -->
-    <div class="dashboard-header">
-      <div>
-        <p>{{ t('Bienvenue,', 'Welcome,') }} <strong>{{ auth.currentUser()?.name }}</strong> 👋</p>
-      </div>
-      <div class="user-info">
-        <span class="badge-role">{{ auth.currentUser()?.role }}</span>
-        <small>{{ auth.currentUser()?.email }}</small>
-      </div>
-    </div>
+    <div class="app-shell">
 
-    <!-- Modules -->
-    <div class="modules-grid">
+      <aside class="app-sidebar">
+        <nav class="side-nav">
 
-      <a routerLink="/calculator" class="module-card yellow">
-        <div class="module-icon">⚡</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Calculateur Solaire', 'Solar Calculator') }}</div>
-          <div class="module-desc">{{ t('Dimensionnez votre installation solaire', 'Size your solar installation') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <a routerLink="/calculator" routerLinkActive="active" class="side-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.5"/>
+              <path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/>
+            </svg>
+            <span>{{ t('Calculateur Solaire', 'Solar Calculator') }}</span>
+          </a>
 
-      <a routerLink="/wind-calculator" class="module-card blue">
-        <div class="module-icon">💨</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Calculateur Éolien', 'Wind Calculator') }}</div>
-          <div class="module-desc">{{ t('Estimez la puissance de votre éolienne', 'Estimate your wind turbine power') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <a routerLink="/wind-calculator" routerLinkActive="active" class="side-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 12h6a3 3 0 1 0-3-3"/>
+              <path d="M12 12L5.5 15a3 3 0 1 0 1.5 3.6"/>
+              <path d="M12 12L9 5.8a3 3 0 1 0-3.6 1.6"/>
+              <circle cx="12" cy="12" r="1"/>
+            </svg>
+            <span>{{ t('Calculateur Éolien', 'Wind Calculator') }}</span>
+          </a>
 
-      <a routerLink="/projects" class="module-card green">
-        <div class="module-icon">📁</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Mes Projets', 'My Projects') }}</div>
-          <div class="module-desc">{{ t('Gérez et suivez vos projets énergétiques', 'Manage and track your energy projects') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <a routerLink="/projects" routerLinkActive="active" class="side-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 7a1 1 0 0 1 1-1h4.5l1.5 2H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/>
+            </svg>
+            <span>{{ t('Mes Projets', 'My Projects') }}</span>
+          </a>
 
-      <a routerLink="/advanced-tools" class="module-card cyan">
-        <div class="module-icon">🛠️</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Outils Avancés', 'Advanced Tools') }}</div>
-          <div class="module-desc">{{ t('Outils de calcul et d\'analyse avancés', 'Advanced calculation and analysis tools') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <a routerLink="/comparison" routerLinkActive="active" class="side-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 20V10M12 20V4M19 20v-7"/>
+            </svg>
+            <span>{{ t('Comparaison Systèmes', 'System Comparison') }}</span>
+          </a>
 
-      <a routerLink="/messages" class="module-card gray">
-        <div class="module-icon">💬</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Messages', 'Messages') }}</div>
-          <div class="module-desc">{{ t('Communiquez avec la communauté', 'Communicate with the community') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <a routerLink="/price-comparator" routerLinkActive="active" class="side-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3h6a1 1 0 0 1 1 1v6l-9.5 9.5a1 1 0 0 1-1.4 0L3.5 15a1 1 0 0 1 0-1.4L13 3.9"/>
+              <circle cx="15.5" cy="7.5" r="1.2"/>
+            </svg>
+            <span>{{ t('Comparateur de Prix', 'Price Comparator') }}</span>
+          </a>
 
-      <a routerLink="/ai-assistant" class="module-card red">
-        <div class="module-icon">🤖</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Assistant IA', 'AI Assistant') }}</div>
-          <div class="module-desc">{{ t('Obtenez des recommandations intelligentes', 'Get intelligent recommendations') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <a routerLink="/advanced-tools" routerLinkActive="active" class="side-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14.7 3.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L7 17l-4 1 1-4L14.7 3.3Z"/>
+            </svg>
+            <span>{{ t('Outils Avancés', 'Advanced Tools') }}</span>
+          </a>
 
-      <a routerLink="/comparison" class="module-card orange">
-        <div class="module-icon">⚖️</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Comparaison Systèmes', 'System Comparison') }}</div>
-          <div class="module-desc">{{ t('Comparez solaire, éolien et hybride', 'Compare solar, wind and hybrid') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <a routerLink="/ai-assistant" routerLinkActive="active" class="side-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/>
+              <circle cx="12" cy="12" r="2.2"/>
+            </svg>
+            <span>{{ t('Assistant IA', 'AI Assistant') }}</span>
+          </a>
 
-      <a routerLink="/price-comparator" class="module-card teal">
-        <div class="module-icon">💰</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Comparateur de Prix', 'Price Comparator') }}</div>
-          <div class="module-desc">{{ t('Trouvez les meilleurs prix au Cameroun', 'Find the best prices in Cameroon') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <a routerLink="/messages" routerLinkActive="active" class="side-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/>
+            </svg>
+            <span>{{ t('Messages', 'Messages') }}</span>
+          </a>
 
-      <a *ngIf="auth.currentUser()?.role === 'admin'" routerLink="/admin" class="module-card dark">
-        <div class="module-icon">🛡️</div>
-        <div class="module-body">
-          <div class="module-title">{{ t('Administrateur', 'Administrator') }}</div>
-          <div class="module-desc">{{ t('Gérez les utilisateurs et le système', 'Manage users and the system') }}</div>
-        </div>
-        <div class="module-arrow">→</div>
-      </a>
+          <ng-container *ngIf="auth.currentUser()?.role === 'admin'">
+            <div class="side-divider"></div>
 
-    </div>
+            <a routerLink="/admin" routerLinkActive="active" class="side-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3l7 3v5c0 4.4-2.9 7.9-7 9-4.1-1.1-7-4.6-7-9V6l7-3Z"/>
+              </svg>
+              <span>{{ t('Administrateur', 'Administrator') }}</span>
+            </a>
 
-    <!-- Actualités -->
-    <div class="news-section">
-      <h5>🌍 {{ t('Actualités Énergies Renouvelables – Afrique & Monde', 'Renewable Energy News – Africa & World') }}</h5>
+            <a routerLink="/admin/ads" routerLinkActive="active" class="side-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 10v4a1 1 0 0 0 1 1h2l7 4V5L6 9H4a1 1 0 0 0-1 1Z"/>
+                <path d="M17 9a4 4 0 0 1 0 6"/>
+              </svg>
+              <span>{{ t('Modération Publicités', 'Ad Moderation') }}</span>
+            </a>
+          </ng-container>
 
-      <div *ngIf="loadingNews" class="text-center py-3">
-        <span>⏳ {{ t('Chargement des actualités...', 'Loading news...') }}</span>
-      </div>
+        </nav>
+      </aside>
 
-      <div class="news-list" *ngIf="!loadingNews">
-        <div *ngFor="let n of news" class="news-item">
-          <div class="news-meta">
-            <span class="badge" [class]="'bg-' + categoryColor(n.category)"
-              [class.text-dark]="n.category === 'Potentiel'">{{ n.category }}</span>
-            <small>{{ n.news_date | date:'dd/MM/yyyy' }}</small>
+      <main class="app-main">
+
+        <div class="dashboard-header">
+          <div>
+            <p>{{ t('Bienvenue,', 'Welcome,') }} <strong>{{ auth.currentUser()?.name }}</strong></p>
           </div>
-          <div class="news-title">{{ n.title }}</div>
-          <div class="news-content">{{ n.content }}</div>
-          <div class="news-footer" *ngIf="n.url">
-            <small class="text-muted">📰 {{ n.source }}</small>
-            <a [href]="n.url" target="_blank" class="news-link">{{ t('Lire la suite →', 'Read more →') }}</a>
+          <div class="user-info">
+            <span class="badge-role">{{ auth.currentUser()?.role }}</span>
+            <small>{{ auth.currentUser()?.email }}</small>
           </div>
         </div>
-        <div *ngIf="news.length === 0" class="text-muted text-center py-3">
-          {{ t('Aucune actualité disponible.', 'No news available.') }}
+
+        <div class="quick-actions">
+          <a routerLink="/calculator" class="quick-btn quick-solar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.5"/>
+              <path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/>
+            </svg>
+            <span>{{ t('Nouveau calcul solaire', 'New solar calculation') }}</span>
+          </a>
+          <a routerLink="/wind-calculator" class="quick-btn quick-wind">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 12h6a3 3 0 1 0-3-3"/>
+              <path d="M12 12L5.5 15a3 3 0 1 0 1.5 3.6"/>
+              <path d="M12 12L9 5.8a3 3 0 1 0-3.6 1.6"/>
+              <circle cx="12" cy="12" r="1"/>
+            </svg>
+            <span>{{ t('Nouveau calcul éolien', 'New wind calculation') }}</span>
+          </a>
         </div>
-      </div>
+
+        <div class="ad-section" *ngIf="ads.length > 0; else noAds">
+          <div class="ad-label">
+            <span>{{ t('Espace Partenaires', 'Partner Space') }}</span>
+          </div>
+
+          <div class="ad-carousel">
+            <button class="ad-nav ad-nav-left" (click)="prevAd()" *ngIf="ads.length > 1" [attr.aria-label]="t('Précédent','Previous')">‹</button>
+
+            <div class="ad-card" (click)="onAdClick(currentAd!)" *ngIf="currentAd as ad">
+              <img [src]="ad.image_url" [alt]="ad.company_name" class="ad-image">
+              <div class="ad-content">
+                <div class="ad-company">{{ ad.company_name }}</div>
+                <div class="ad-title">{{ ad.title }}</div>
+                <div class="ad-desc">{{ ad.description }}</div>
+                <button class="ad-cta">{{ ad.cta_label }}</button>
+              </div>
+            </div>
+
+            <button class="ad-nav ad-nav-right" (click)="nextAd()" *ngIf="ads.length > 1" [attr.aria-label]="t('Suivant','Next')">›</button>
+          </div>
+
+          <div class="ad-dots" *ngIf="ads.length > 1">
+            <span *ngFor="let a of ads; let i = index"
+                  class="ad-dot" [class.active]="i === currentAdIndex"
+                  (click)="goToAd(i)"></span>
+          </div>
+
+          <div class="ad-disclaimer">
+            {{ t('Contenu sponsorisé. Votre entreprise ? ', 'Sponsored content. Is this your business? ') }}
+            <a routerLink="/advertise">{{ t('Faites votre publicité ici', 'Advertise here') }}</a>
+          </div>
+        </div>
+
+        <ng-template #noAds>
+          <div class="ad-section ad-empty">
+            <div class="ad-disclaimer">
+              {{ t('Cet espace est réservé à nos partenaires.', 'This space is reserved for our partners.') }}
+              <a routerLink="/advertise">{{ t('Devenez annonceur', 'Become an advertiser') }}</a>
+            </div>
+          </div>
+        </ng-template>
+
+        <div class="news-section">
+          <h5>{{ t('Actualités Énergies Renouvelables – Afrique & Monde', 'Renewable Energy News – Africa & World') }}</h5>
+
+          <div *ngIf="loadingNews" class="text-center py-3">
+            <span>{{ t('Chargement des actualités...', 'Loading news...') }}</span>
+          </div>
+
+          <div class="news-list" *ngIf="!loadingNews">
+            <div *ngFor="let n of news" class="news-item">
+              <div class="news-meta">
+                <span class="badge" [class]="'bg-' + categoryColor(n.category)"
+                  [class.text-dark]="n.category === 'Potentiel'">{{ n.category }}</span>
+                <small>{{ n.news_date | date:'dd/MM/yyyy' }}</small>
+              </div>
+              <div class="news-title">{{ n.title }}</div>
+              <div class="news-content">{{ n.content }}</div>
+              <div class="news-footer" *ngIf="n.url">
+                <small class="text-muted">{{ n.source }}</small>
+                <a [href]="n.url" target="_blank" class="news-link">{{ t('Lire la suite', 'Read more') }}</a>
+              </div>
+            </div>
+            <div *ngIf="news.length === 0" class="text-muted text-center py-3">
+              {{ t('Aucune actualité disponible.', 'No news available.') }}
+            </div>
+          </div>
+        </div>
+
+      </main>
     </div>
 
   </div>

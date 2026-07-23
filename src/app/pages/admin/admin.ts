@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -37,7 +38,7 @@ interface HelpMsg {
   styleUrl: './admin.css'
 })
 export class Admin implements OnInit {
-  private apiUrl = 'https://zestful-joy-production-291d.up.railway.app/api';
+  private apiUrl = environment.apiUrl;
 
   activeTab: 'users' | 'help' = 'users';
 

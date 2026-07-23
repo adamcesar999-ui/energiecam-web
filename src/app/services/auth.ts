@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface User {
   id: number;
@@ -20,7 +21,7 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class Auth {
-  private apiUrl = 'https://zestful-joy-production-291d.up.railway.app/api';
+  private apiUrl = environment.apiUrl;
 
   currentUser = signal<User | null>(null);
   isLoggedIn = signal<boolean>(false);
@@ -81,7 +82,6 @@ export class Auth {
     );
   }
 
-  // ⬅️ NOUVEAU
   changePassword(data: { current_password: string; new_password: string; new_password_confirmation: string }): Observable<any> {
     return this.http.put(`${this.apiUrl}/profile/password`, data);
   }

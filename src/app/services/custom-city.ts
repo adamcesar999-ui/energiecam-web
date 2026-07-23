@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface CustomCity {
   id: number;
@@ -18,7 +19,7 @@ export interface CustomCity {
   providedIn: 'root'
 })
 export class CustomCityService {
-  private apiUrl = 'https://zestful-joy-production-291d.up.railway.app/api/custom-cities';
+  private apiUrl = `${environment.apiUrl}/custom-cities`;
 
   constructor(private http: HttpClient) {}
 

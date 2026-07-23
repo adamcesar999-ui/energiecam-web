@@ -1,0 +1,79 @@
+<div class="advertise-wrapper">
+
+  <div class="advertise-header">
+    <h1>{{ t('Faites votre publicité sur EnergieCam', 'Advertise on EnergieCam') }}</h1>
+    <p>{{ t('Touchez une audience ciblée intéressée par les énergies renouvelables au Cameroun.', 'Reach a targeted audience interested in renewable energy in Cameroon.') }}</p>
+  </div>
+
+  <div class="advertise-card">
+
+    <div *ngIf="submitStatus === 'success'" class="alert alert-success">
+       {{ t('Votre demande a été soumise avec succès ! Elle sera examinée par notre équipe avant publication.', 'Your request was submitted successfully! It will be reviewed by our team before publication.') }}
+    </div>
+
+    <div *ngIf="submitStatus === 'error'" class="alert alert-danger">
+       {{ errorMessage }}
+    </div>
+
+    <form *ngIf="submitStatus !== 'success'" (ngSubmit)="submit()">
+
+      <div class="form-group">
+        <label>{{ t('Nom de l\'entreprise', 'Company name') }} *</label>
+        <input class="form-control" [(ngModel)]="companyName" name="companyName" required>
+      </div>
+
+      <div class="form-group">
+        <label>{{ t('Titre de la publicité', 'Ad title') }} *</label>
+        <input class="form-control" [(ngModel)]="title" name="title" required
+               [placeholder]="t('Ex: Panneaux solaires haute performance', 'Ex: High-performance solar panels')">
+      </div>
+
+      <div class="form-group">
+        <label>{{ t('Description', 'Description') }} *</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="description" name="description" required
+                  maxlength="500"
+                  [placeholder]="t('Décrivez votre produit ou service en quelques phrases...', 'Describe your product or service in a few sentences...')"></textarea>
+        <small class="text-muted">{{ description.length }}/500</small>
+      </div>
+
+      <div class="form-group">
+        <label>{{ t('Lien vers votre site / page produit', 'Link to your website / product page') }} *</label>
+        <input class="form-control" type="url" [(ngModel)]="targetUrl" name="targetUrl" required
+               placeholder="https://...">
+      </div>
+
+      <div class="form-group">
+        <label>{{ t('Texte du bouton (optionnel)', 'Button text (optional)') }}</label>
+        <input class="form-control" [(ngModel)]="ctaLabel" name="ctaLabel"
+               [placeholder]="t('Ex: En savoir plus, Visiter le site...', 'Ex: Learn more, Visit site...')">
+      </div>
+
+      <div class="form-group">
+        <label>{{ t('Email de contact', 'Contact email') }} *</label>
+        <input class="form-control" type="email" [(ngModel)]="contactEmail" name="contactEmail" required>
+      </div>
+
+      <div class="form-group">
+        <label>{{ t('Image / Logo', 'Image / Logo') }} *</label>
+        <input class="form-control" type="file" accept="image/png,image/jpeg,image/webp" (change)="onFileSelected($event)">
+        <small class="text-muted">{{ t('Format carré recommandé, max 2 Mo (JPG, PNG, WEBP)', 'Square format recommended, max 2 MB (JPG, PNG, WEBP)') }}</small>
+      </div>
+
+      <div *ngIf="imagePreview" class="image-preview">
+        <img [src]="imagePreview" alt="Preview">
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="submitting || !isFormValid()">
+        <span *ngIf="!submitting"> {{ t('Soumettre ma demande', 'Submit my request') }}</span>
+        <span *ngIf="submitting"> {{ t('Envoi en cours...', 'Sending...') }}</span>
+      </button>
+
+      <p class="disclaimer">
+        {{ t('Toutes les demandes sont examinées manuellement avant publication. Vous serez contacté(e) par email.', 'All requests are manually reviewed before publication. You will be contacted by email.') }}
+      </p>
+
+    </form>
+
+  </div>
+
+</div>

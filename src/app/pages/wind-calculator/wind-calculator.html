@@ -1,15 +1,16 @@
 <div class="container py-4">
 
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold">💨 {{ t('Calculateur Éolien', 'Wind Calculator') }}</h1>
+    <h1 class="fw-bold"> {{ t('Calculateur Éolien', 'Wind Calculator') }}</h1>
     <a routerLink="/dashboard" class="btn btn-outline-secondary">← {{ t('Retour', 'Back') }}</a>
   </div>
 
   <div class="card p-4 mb-4">
-    <h4 class="mb-3">📍 {{ t('Localisation & Paramètres', 'Location & Parameters') }}</h4>
+    <h4 class="mb-3"> {{ t('Localisation & Paramètres', 'Location & Parameters') }}</h4>
     <div class="row">
       <div class="col-md-6">
 
+        <!-- Région -->
         <div class="mb-3">
           <label class="form-label">{{ t('Région', 'Region') }}</label>
           <select class="form-select" [(ngModel)]="selectedRegionName" (ngModelChange)="onRegionGroupChange()">
@@ -18,37 +19,36 @@
           </select>
         </div>
 
+        <!-- Ville -->
         <div class="mb-3" *ngIf="selectedRegionName">
           <label class="form-label">{{ t('Ville', 'City') }}</label>
           <div class="d-flex gap-2">
             <select class="form-select" [(ngModel)]="selectedRegion" (ngModelChange)="onRegionChange()" [compareWith]="regionCompare">
               <option [ngValue]="null">{{ t('-- Choisir une ville --', '-- Choose a city --') }}</option>
-              <option *ngFor="let r of filteredRegions" [ngValue]="r">{{ r.name }}{{ r.isCustom ? ' ⭐' : '' }}</option>
+              <option *ngFor="let r of filteredRegions" [ngValue]="r">{{ r.name }}{{ r.isCustom ? '' : '' }}</option>
             </select>
             <button *ngIf="selectedRegion?.isCustom" class="btn btn-outline-danger" type="button"
                     [title]="t('Supprimer cette ville', 'Delete this city')"
                     (click)="deleteCustomCity(selectedRegion!)">
-              🗑️
+              <i class="bi bi-trash"></i>
             </button>
           </div>
-          <small class="text-muted" *ngIf="selectedRegion?.isCustom">⭐ {{ t('Ville personnalisée', 'Custom city') }}</small>
+          <small class="text-muted" *ngIf="selectedRegion?.isCustom"> {{ t('Ville personnalisée', 'Custom city') }}</small>
         </div>
 
         <!-- Ajout ville personnalisée -->
         <div class="mb-3">
           <button class="btn btn-sm btn-outline-warning" (click)="showAddCityForm = !showAddCityForm">
-            📍 {{ t('Ma ville ne figure pas dans la liste', 'My city is not in the list') }}
+            {{ t('Ma ville ne figure pas dans la liste', 'My city is not in the list') }}
           </button>
         </div>
 
         <div *ngIf="showAddCityForm" class="card card-body bg-light mb-3">
           <div class="fw-bold mb-2">{{ t('Ajouter une ville camerounaise', 'Add a Cameroonian city') }}</div>
-
           <div class="mb-2">
             <label class="form-label small mb-1">{{ t('Nom de la ville', 'City name') }} *</label>
             <input class="form-control" [placeholder]="t('Nom de la ville', 'City name')" [(ngModel)]="newCityName">
           </div>
-
           <div class="mb-2">
             <label class="form-label small mb-1">{{ t('Région', 'Region') }} *</label>
             <select class="form-select" [(ngModel)]="newCityRegion" required>
@@ -56,7 +56,6 @@
               <option *ngFor="let g of regionGroups" [ngValue]="g.name">{{ g.name }}</option>
             </select>
           </div>
-
           <div class="row g-2 mb-2">
             <div class="col-6">
               <label class="form-label small mb-1">Latitude *</label>
@@ -67,12 +66,10 @@
               <input type="number" step="0.0001" class="form-control" placeholder="Longitude" [(ngModel)]="newCityLon">
             </div>
           </div>
-
           <div class="mb-2">
             <label class="form-label small mb-1">{{ t('Vitesse du vent (optionnel)', 'Wind speed (optional)') }}</label>
             <input type="number" step="0.1" class="form-control" [placeholder]="t('Laissez vide pour moyenne régionale', 'Leave empty for regional average')" [(ngModel)]="newCityWind">
           </div>
-
           <small class="text-muted mb-2">{{ t('Trouvez les coordonnées sur maps.google.com', 'Find coordinates on maps.google.com (right click → "What\'s here")') }}</small>
           <button class="btn btn-warning btn-sm mt-1"
                   (click)="addCustomCity()"
@@ -86,39 +83,149 @@
           </div>
         </div>
 
+        <!-- ===== PARAMÈTRES DE CONCORDANCE (sans valeurs par défaut) ===== -->
+        <div class="mb-3">
+          <label class="form-label">{{ t('Hauteur de mât (m)', 'Mast height (m)') }}</label>
+          <input type="number" class="form-control"
+                 [(ngModel)]="height"
+                 [placeholder]="t('Ex: 10', 'E.g. 10')"
+                 min="1" step="0.5" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ t('Classe de rugosité (0-4)', 'Roughness class (0-4)') }}</label>
+          <select class="form-select" [(ngModel)]="roughnessClass">
+            <option [ngValue]="null">{{ t('Choisir une classe', 'Choose a class') }}</option>
+            <option value="0">0 – Eau, herbe courte (α=0.10)</option>
+            <option value="1">1 – Herbe haute, cultures (α=0.15)</option>
+            <option value="2">2 – Arbres, haies (α=0.20)</option>
+            <option value="3">3 – Banlieue, forêt (α=0.30)</option>
+            <option value="4">4 – Ville, immeubles (α=0.40)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ t('Facteur de forme k (Weibull)', 'Shape factor k (Weibull)') }}</label>
+          <input type="number" class="form-control"
+                 [(ngModel)]="kFactor"
+                 [placeholder]="t('Ex: 2', 'E.g. 2')"
+                 min="1" max="5" step="0.1" required>
+          <small class="form-text text-muted">{{ t('2 = distribution de Rayleigh (par défaut)', '2 = Rayleigh distribution (default)') }}</small>
+        </div>
+
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="useArticleData"
+                 [(ngModel)]="useArticleData"
+                 name="useArticleData"
+                 (ngModelChange)="onRegionChange()">
+          <label class="form-check-label" for="useArticleData">
+            {{ t('Utiliser les données de l\'article pour Douala (138m, rugosité 0)', 'Use article data for Douala (138m, roughness 0)') }}
+          </label>
+        </div>
+
         <div class="mb-3">
           <label class="form-label">{{ t('Vitesse du vent (m/s)', 'Wind speed (m/s)') }}</label>
-          <input type="number" step="0.1" class="form-control" [(ngModel)]="windSpeed">
+          <input type="number" step="0.1" class="form-control" [(ngModel)]="windSpeed" readonly>
+          <small class="text-muted">{{ t('Calculée automatiquement d\'après la ville et la hauteur', 'Automatically calculated from city and height') }}</small>
         </div>
       </div>
 
       <div class="col-md-6">
         <div class="mb-3">
           <label class="form-label">{{ t('Puissance requise (W)', 'Required power (W)') }}</label>
-          <input type="number" class="form-control" [(ngModel)]="requiredPower" [placeholder]="t('Ex: 2000', 'E.g. 2000')">
+          <input type="number" class="form-control"
+                 [(ngModel)]="requiredPower"
+                 [placeholder]="t('Ex: 2000', 'E.g. 2000')">
         </div>
+
         <div class="mb-3">
           <label class="form-label">{{ t('Rendement de la turbine (%)', 'Turbine efficiency (%)') }}</label>
-          <input type="number" class="form-control" [(ngModel)]="efficiency" [placeholder]="t('Ex: 35', 'E.g. 35')">
+          <input type="number" class="form-control"
+                 [(ngModel)]="efficiency"
+                 [placeholder]="t('Ex: 35', 'E.g. 35')">
         </div>
+
         <div class="mb-3">
           <label class="form-label">{{ t('Densité de l\'air (kg/m³)', 'Air density (kg/m³)') }}</label>
-          <input type="number" step="0.001" class="form-control" [(ngModel)]="airDensity" [placeholder]="t('Ex: 1.225', 'E.g. 1.225')">
+          <input type="number" step="0.001" class="form-control"
+                 [(ngModel)]="airDensity"
+                 [placeholder]="t('Ex: 1.225', 'E.g. 1.225')">
+        </div>
+
+        <!-- ===== PARAMÈTRES FINANCIERS (sans valeurs par défaut) ===== -->
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">{{ t('Taux d\'actualisation (%)', 'Discount rate (%)') }}</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="interestRate"
+                     [placeholder]="t('Ex: 5', 'E.g. 5')"
+                     step="0.1" min="0" max="20" required>
+              <small class="text-muted">{{ t('Coût du capital', 'Cost of capital') }}</small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">{{ t('Inflation annuelle (%)', 'Annual inflation (%)') }}</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="inflationRate"
+                     [placeholder]="t('Ex: 2', 'E.g. 2')"
+                     step="0.1" min="0" max="10" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">{{ t('Maintenance annuelle (% invest.)', 'Annual maintenance (% inv.)') }}</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="maintenanceRate"
+                     [placeholder]="t('Ex: 1.5', 'E.g. 1.5')"
+                     step="0.1" min="0" max="10" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">{{ t('Dégradation annuelle (%)', 'Annual degradation (%)') }}</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="degradationRate"
+                     [placeholder]="t('Ex: 0.5', 'E.g. 0.5')"
+                     step="0.1" min="0" max="5" required>
+              <small class="text-muted">{{ t('Perte de production annuelle (0.5-1% typique)', 'Annual production loss (0.5-1% typical)') }}</small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">{{ t('Part financée par emprunt (%)', 'Loan portion (%)') }}</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="loanRatio"
+                     [placeholder]="t('Ex: 0', 'E.g. 0')"
+                     step="5" min="0" max="100" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">{{ t('Valeur résiduelle (% invest.)', 'Residual value (% inv.)') }}</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="residualValue"
+                     [placeholder]="t('Ex: 10', 'E.g. 10')"
+                     step="1" min="0" max="50" required>
+              <small class="text-muted">{{ t('valeur de revente après 20 ans', 'resale value after 20 years') }}</small>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="d-flex align-items-center gap-3">
       <button class="btn btn-warning fw-bold" (click)="calculateWind()" [disabled]="!isFormValid()">
-        💨 {{ t('Calculer', 'Calculate') }}
+        {{ t('Calculer', 'Calculate') }}
       </button>
       <small *ngIf="!isFormValid()" class="text-danger">
-        {{ t('Veuillez remplir : ville, puissance requise, vitesse du vent, rendement et densité de l\'air.', 'Please fill: city, required power, wind speed, efficiency and air density.') }}
+        {{ t('Veuillez remplir tous les champs correctement.', 'Please fill all fields correctly.') }}
       </small>
     </div>
   </div>
 
-  <!-- RÉSULTATS -->
+  <!-- ========== RÉSULTATS ========== -->
   <div *ngIf="results">
 
     <div *ngIf="saveMessage" class="alert alert-success">{{ saveMessage }}</div>
@@ -128,6 +235,58 @@
 
     <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e3f2fd, #e8f5e9);">
       <h4 class="mb-3">✅ {{ t('Résultats du Dimensionnement Éolien', 'Wind Sizing Results') }} – {{ results.region }}</h4>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6 col-lg-3">
+          <div class="bg-white rounded p-3 shadow-sm text-center">
+            <div class="small text-muted">{{ t('Vitesse à 10m', 'Speed at 10m') }}</div>
+            <div class="fs-5 fw-bold">{{ results.windSpeed10 }} m/s</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="bg-white rounded p-3 shadow-sm text-center">
+            <div class="small text-muted">{{ t('Hauteur choisie', 'Chosen height') }}</div>
+            <div class="fs-5 fw-bold">{{ results.height }} m</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="bg-white rounded p-3 shadow-sm text-center">
+            <div class="small text-muted">{{ t('Classe de rugosité', 'Roughness class') }}</div>
+            <div class="fs-5 fw-bold">{{ results.roughnessClass }}</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="bg-white rounded p-3 shadow-sm text-center">
+            <div class="small text-muted">{{ t('Vitesse extrapolée', 'Extrapolated speed') }}</div>
+            <div class="fs-5 fw-bold text-primary">{{ results.windSpeed }} m/s</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="bg-white rounded p-3 shadow-sm text-center">
+            <div class="small text-muted">{{ t('Densité de puissance', 'Power density') }}</div>
+            <div class="fs-5 fw-bold text-primary">{{ results.powerDensity | number:'1.2-2' }} W/m²</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="bg-white rounded p-3 shadow-sm text-center">
+            <div class="small text-muted">{{ t('Paramètres Weibull', 'Weibull parameters') }}</div>
+            <div class="fs-6 fw-bold">k = {{ results.weibullK | number:'1.2-2' }}, C = {{ results.weibullC | number:'1.2-2' }} m/s</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" *ngIf="results.articleUsed">
+          <div class="bg-white rounded p-3 shadow-sm text-center border border-success">
+            <span class="badge bg-success fs-6">{{ t('Données article', 'Article data') }}</span>
+            <div class="small text-muted">{{ t('Douala – 138m – rugosité 0', 'Douala – 138m – roughness 0') }}</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="bg-white rounded p-3 shadow-sm text-center">
+            <div class="small text-muted">{{ t('Vitesse cubique moyenne', 'Mean cube speed') }}</div>
+            <div class="fs-6 fw-bold">{{ results.vCubeMean | number:'1.2-2' }} (m/s)³</div>
+          </div>
+        </div>
+      </div>
+
       <div class="row text-center g-3">
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
@@ -157,13 +316,13 @@
     </div>
 
     <div class="card p-4 mb-3">
-      <h5 class="mb-3">🛒 {{ t('Options d\'éoliennes disponibles', 'Available turbine options') }}</h5>
+      <h5 class="mb-3"> {{ t('Options d\'éoliennes disponibles', 'Available turbine options') }}</h5>
       <div class="row g-3">
         <div class="col-md-4" *ngFor="let t of results.turbineOptions">
           <div class="border rounded p-3 h-100" [class.border-warning]="t.recommended" [class.border-2]="t.recommended">
-            <span *ngIf="t.recommended" class="badge bg-warning text-dark mb-2">⭐ {{ t('Recommandé', 'Recommended') }}</span>
+            <span *ngIf="t.recommended" class="badge bg-warning text-dark mb-2"> {{ t('Recommandé', 'Recommended') }}</span>
             <div class="fw-bold">{{ t.name }}</div>
-            <div class="small text-muted">🏭 {{ t.brand }}</div>
+            <div class="small text-muted"> {{ t.brand }}</div>
             <div class="fw-bold text-success mt-2">{{ t.price | number:'1.0-0' }} FCFA</div>
           </div>
         </div>
@@ -171,50 +330,106 @@
     </div>
 
     <div class="card p-4 mb-3">
-      <h5 class="mb-3">💰 {{ t('Estimation des Coûts', 'Cost Estimation') }}</h5>
+      <h5 class="mb-3"> {{ t('Estimation des Coûts', 'Cost Estimation') }}</h5>
       <div class="alert alert-warning d-flex justify-content-between fw-bold fs-5">
-        <span>💰 TOTAL ({{ results.nTurb }} × {{ results.rec.name }})</span>
+        <span> TOTAL ({{ results.nTurb }} × {{ results.rec.name }})</span>
         <span>{{ results.totalCost | number:'1.0-0' }} FCFA</span>
       </div>
     </div>
 
     <div class="card p-4 mb-3" style="background: linear-gradient(135deg, #e8f5e9, #f1f8e9);">
-      <h5 class="mb-3">📈 {{ t('Retour sur Investissement (ROI)', 'Return on Investment (ROI)') }}</h5>
+      <h5 class="mb-3"> {{ t('Retour sur Investissement (ROI) avancé', 'Advanced ROI') }}</h5>
+
       <div class="row text-center g-3 mb-3">
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
             <div class="fs-3 fw-bold text-success">{{ results.roi.productionAnnuelle | number:'1.0-0' }}</div>
-            <div class="small text-muted">{{ t('kWh produits/an', 'kWh produced/year') }}</div>
+            <div class="small text-muted">{{ t('kWh produits/an', 'kWh/year') }}</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
             <div class="fs-3 fw-bold text-success">{{ results.roi.economieAnnuelle | number:'1.0-0' }}</div>
-            <div class="small text-muted">{{ t('FCFA économisés/an', 'FCFA saved/year') }}</div>
+            <div class="small text-muted">{{ t('Économies brutes/an (FCFA)', 'Gross savings/year') }}</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
             <div class="fs-3 fw-bold text-warning">{{ results.roi.paybackYears }}</div>
-            <div class="small text-muted">{{ t('ans avant remboursement', 'years to payback') }}</div>
+            <div class="small text-muted">{{ t('Payback simple (ans)', 'Simple payback (years)') }}</div>
           </div>
         </div>
         <div class="col-6 col-md-3">
           <div class="bg-white rounded p-3 shadow-sm">
             <div class="fs-3 fw-bold text-primary">{{ results.roi.roi20ans }}</div>
-            <div class="small text-muted">{{ t('% ROI sur 20 ans', '% ROI over 20 years') }}</div>
+            <div class="small text-muted">{{ t('ROI simple sur 20 ans (%)', 'Simple ROI 20y') }}</div>
           </div>
         </div>
       </div>
-      <div class="alert alert-success mb-0">
-        💡 {{ t('Votre installation se rentabilise en', 'Your installation pays back in') }} <strong>{{ results.roi.paybackYears }} {{ t('ans', 'years') }}</strong>
-        {{ t('et génère un bénéfice net de', 'and generates a net benefit of') }}
-        <strong>{{ results.roi.benefice20ans | number:'1.0-0' }} FCFA {{ t('sur 20 ans', 'over 20 years') }}</strong>.
+
+      <div class="row text-center g-3 mb-3">
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm border border-success">
+            <div class="fs-4 fw-bold text-success">{{ results.roi.van | number:'1.0-0' }}</div>
+            <div class="small text-muted">{{ t('VAN (FCFA)', 'NPV (FCFA)') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm border border-success">
+            <div class="fs-4 fw-bold text-success">{{ results.roi.tri }}</div>
+            <div class="small text-muted">{{ t('TRI - Taux de Rendement Interne', 'IRR') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-4 fw-bold text-warning">{{ results.roi.paybackDiscounted }}</div>
+            <div class="small text-muted">{{ t('Payback actualisé (ans)', 'Discounted payback (years)') }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="fs-4 fw-bold text-info">{{ results.roi.seuilRentabilite }}</div>
+            <div class="small text-muted">{{ t('Seuil de rentabilité (ans)', 'Break-even point (years)') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <div class="row text-center">
+          <div class="col-6 col-md-4">
+            <strong>{{ t('Maintenance annuelle', 'Annual maintenance') }}</strong><br>
+            {{ results.roi.maintenanceCost | number:'1.0-0' }} FCFA
+          </div>
+          <div class="col-6 col-md-4">
+            <strong>{{ t('Économies nettes/an', 'Net savings/year') }}</strong><br>
+            {{ results.roi.netAnnualBenefit | number:'1.0-0' }} FCFA
+          </div>
+          <div class="col-6 col-md-4">
+            <strong>{{ t('Valeur résiduelle (20 ans)', 'Residual value (20y)') }}</strong><br>
+            {{ results.roi.residualValue | number:'1.0-0' }} FCFA
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3" *ngIf="results.roi.cashFlows && results.roi.cashFlows.length > 0">
+        <canvas id="cashFlowChart" height="200"></canvas>
+      </div>
+
+      <div class="alert alert-success mt-3">
+        <strong>{{ t('Conclusion', 'Conclusion') }} :</strong>
+        <span *ngIf="results.roi.van > 0">
+          {{ t('Le projet est financièrement viable avec une VAN positive de', 'The project is financially viable with a positive NPV of') }}
+          <strong>{{ results.roi.van | number:'1.0-0' }} FCFA</strong>
+          {{ t('et un TRI de', 'and an IRR of') }} <strong>{{ results.roi.tri }}</strong>.
+        </span>
+        <span *ngIf="results.roi.van <= 0">
+          {{ t('Le projet n\'est pas rentable dans les conditions actuelles (VAN négative).', 'The project is not profitable under current conditions (negative NPV).') }}
+        </span>
       </div>
     </div>
 
     <div class="card p-4 mb-3">
-      <h5 class="mb-3">📊 {{ t('Analyse Graphique', 'Graphical Analysis') }}</h5>
+      <h5 class="mb-3"> {{ t('Analyse Graphique', 'Graphical Analysis') }}</h5>
       <div class="row">
         <div class="col-md-6 mb-3"><canvas id="windSpeedChart" height="250"></canvas></div>
         <div class="col-md-6 mb-3"><canvas id="turbineChart" height="250"></canvas></div>
@@ -222,8 +437,8 @@
     </div>
 
     <div class="d-flex gap-2 mb-4">
-      <button class="btn btn-outline-secondary" (click)="reset()">🔄 {{ t('Nouveau calcul', 'New calculation') }}</button>
-      <a routerLink="/projects" class="btn btn-warning fw-bold">📁 {{ t('Voir mes projets', 'View my projects') }}</a>
+      <button class="btn btn-outline-secondary" (click)="reset()"> {{ t('Nouveau calcul', 'New calculation') }}</button>
+      <a routerLink="/projects" class="btn btn-warning fw-bold"> {{ t('Voir mes projets', 'View my projects') }}</a>
     </div>
 
   </div>

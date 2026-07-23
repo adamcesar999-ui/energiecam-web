@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface PvgisData {
   source: string;
@@ -16,7 +17,7 @@ export interface PvgisData {
   providedIn: 'root'
 })
 export class PvgisService {
-  private apiUrl = 'https://zestful-joy-production-291d.up.railway.app/api/pvgis/solar';
+  private apiUrl = `${environment.apiUrl}/pvgis/solar`;
 
   constructor(private http: HttpClient) {}
 

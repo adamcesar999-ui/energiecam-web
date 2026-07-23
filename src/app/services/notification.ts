@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface AppNotification {
   id: number;
@@ -14,7 +15,7 @@ export interface AppNotification {
   providedIn: 'root'
 })
 export class NotificationService {
-  private apiUrl = 'https://zestful-joy-production-291d.up.railway.app/api/notifications';
+  private apiUrl = `${environment.apiUrl}/notifications`;
 
   constructor(private http: HttpClient) {}
 

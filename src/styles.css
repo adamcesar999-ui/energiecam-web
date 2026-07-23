@@ -42,6 +42,37 @@ body.dark-mode .border-top {
   border-color: rgba(255,255,255,0.1) !important;
 }
 
+/* ===== BOUTONS DU HEADER / NAVBAR (contraste renforcé) =====
+   Les boutons "outline" avaient une bordure trop peu visible
+   (rgba 0.3) sur le fond sombre du header. On augmente le
+   contraste et on couvre aussi les variantes primary/info/light
+   susceptibles d'être utilisées par les boutons du haut. */
+body.dark-mode .btn-outline-secondary,
+body.dark-mode .btn-outline-light,
+body.dark-mode .btn-outline-dark {
+  color: #ecf0f1 !important;
+  border-color: rgba(255,255,255,0.45) !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .btn-outline-secondary:hover,
+body.dark-mode .btn-outline-light:hover,
+body.dark-mode .btn-outline-dark:hover {
+  background-color: rgba(255,255,255,0.08) !important;
+  border-color: #ecf0f1 !important;
+}
+
+body.dark-mode .btn-outline-primary,
+body.dark-mode .btn-outline-info {
+  color: #6cb2eb !important;
+  border-color: #6cb2eb !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .btn-link {
+  color: #F5A623 !important;
+}
+
 /* ===== AVATAR NAVBAR ===== */
 .user-avatar-circle {
   width: 36px !important;
@@ -128,13 +159,4 @@ body.dark-mode .position-absolute.bg-white {
   background-color: #16213e !important;
   color: #ecf0f1 !important;
   border: 1px solid rgba(255,255,255,0.1);
-}
-
-body.dark-mode .btn-outline-secondary {
-  color: #ecf0f1 !important;
-  border-color: rgba(255,255,255,0.3) !important;
-}
-
-body.dark-mode .btn-link {
-  color: #F5A623 !important;
 }
